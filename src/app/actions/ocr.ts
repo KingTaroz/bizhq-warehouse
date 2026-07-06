@@ -272,7 +272,7 @@ If the document is a receipt without product details, return an empty items arra
   const responseText = response.text;
   let extractedData: any;
   try {
-    extractedData = JSON.parse(responseText);
+    extractedData = JSON.parse(responseText || "{}");
   } catch (e) {
     throw new Error("Failed to parse AI response as JSON.");
   }

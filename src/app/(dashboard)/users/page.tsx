@@ -51,7 +51,7 @@ export default async function UsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
-                {users.map(user => (
+                {users.map((user: any) => (
                   <tr key={user.id} className="text-slate-300">
                     <td className="py-4">{user.username}</td>
                     <td className="py-4">{user.name || '-'}</td>
