@@ -19,8 +19,8 @@ export default async function Home() {
   let inboundToday = 0;
   let outboundToday = 0;
 
-  todaysTransactions.forEach(t => {
-    const qty = t.items.reduce((sum, item) => sum + item.quantity, 0);
+  todaysTransactions.forEach((t: any) => {
+    const qty = t.items.reduce((sum: any, item: any) => sum + item.quantity, 0);
     if (t.type === 'INBOUND') inboundToday += qty;
     if (t.type === 'OUTBOUND') outboundToday += qty;
     // Note: DEFECT is treated separately, or we could count it as outbound
