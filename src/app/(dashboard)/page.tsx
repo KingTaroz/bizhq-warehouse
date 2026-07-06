@@ -80,7 +80,7 @@ export default async function Home() {
             <div className="text-slate-500 text-center py-10">ไม่มีสินค้าคงคลังต่ำ</div>
           ) : (
             <div className="space-y-3">
-              {inventoryStatus.slice(0, 8).map(inv => (
+              {inventoryStatus.slice(0, 8).map((inv: any) => (
                 <div key={inv.id} className="flex justify-between items-center p-3 bg-[#09090b] rounded-xl border border-slate-800/50">
                   <div className="truncate pr-4">
                     <div className="font-medium text-slate-300 text-sm truncate">{inv.product.name}</div>
@@ -101,7 +101,7 @@ export default async function Home() {
             <div className="text-slate-500 text-center py-10">ยังไม่มีการเคลื่อนไหวของสต๊อก</div>
           ) : (
             <div className="space-y-3">
-              {recentTransactions.map((tx) => (
+              {recentTransactions.map((tx: any) => (
                 <div key={tx.id} className="flex justify-between items-start p-4 bg-[#09090b] rounded-xl border border-slate-800/50">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -116,7 +116,7 @@ export default async function Home() {
                       <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{tx.reference}</span>
                     </div>
                     <div className="text-sm text-slate-300 mt-2">
-                      {tx.items.slice(0, 2).map(item => (
+                      {tx.items.slice(0, 2).map((item: any) => (
                         <div key={item.id}>• {item.product.name}</div>
                       ))}
                       {tx.items.length > 2 && <div className="text-slate-500 text-xs mt-1">และอื่นๆ อีก {tx.items.length - 2} รายการ...</div>}
@@ -127,7 +127,7 @@ export default async function Home() {
                     tx.type === 'OUTBOUND' ? 'text-green-500' :
                     'text-red-500'
                   }`}>
-                    {tx.type === 'INBOUND' ? '+' : '-'}{tx.items.reduce((sum, item) => sum + item.quantity, 0)}
+                    {tx.type === 'INBOUND' ? '+' : '-'}{tx.items.reduce((sum: any, item: any) => sum + item.quantity, 0)}
                   </div>
                 </div>
               ))}
