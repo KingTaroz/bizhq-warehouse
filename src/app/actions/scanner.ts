@@ -20,8 +20,8 @@ export async function processScannedBarcode(barcode: string) {
     return { error: 'ไม่พบคำสั่งซื้อ หรือคำสั่งซื้อนี้ถูกแพ็ค/ตัดสต๊อกไปแล้ว' };
   }
 
-  const unknownSkus = [];
-  const knownSkus = [];
+  const unknownSkus: string[] = [];
+  const knownSkus: any[] = [];
 
   for (const item of order.items) {
     const skuRecord = await prisma.sku.findUnique({
@@ -110,7 +110,7 @@ export async function processScannedBarcode(barcode: string) {
 }
 
 export async function saveSkuMapping(platform: string, skuCode: string, barcodeCounts: Record<string, number>) {
-  const itemsToCreate = [];
+  const itemsToCreate: { productId: string; quantity: number }[] = [];
   
   for (const [code, quantity] of Object.entries(barcodeCounts)) {
     const barcodeRecord = await prisma.barcode.findUnique({ where: { code } });

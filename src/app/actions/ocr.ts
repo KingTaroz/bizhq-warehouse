@@ -89,7 +89,7 @@ export async function processOCRInbound(documentNo: string, arg2: any, arg3?: an
 
     const location = await getMainLocation();
 
-    let parsedDate = null;
+    let parsedDate: Date | null = null;
     if (documentDate) {
       const d = new Date(documentDate);
       if (!isNaN(d.getTime())) {

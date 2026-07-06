@@ -116,7 +116,7 @@ export async function importCosts(formData: FormData) {
         
         if (!productId) continue;
 
-        let finalNewCost = undefined;
+        let finalNewCost: number | undefined = undefined;
 
         if (newCostPieceStr !== undefined && newCostPieceStr !== '') {
           finalNewCost = parseFloat(String(newCostPieceStr).replace(/[^0-9.]/g, ''));

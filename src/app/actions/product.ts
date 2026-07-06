@@ -19,27 +19,27 @@ export async function getProducts() {
 
 export async function getDistinctOptions() {
   const brands = await prisma.product.findMany({
-    where: { brand: { not: null, not: '' } },
+    where: { brand: { not: '' } },
     distinct: ['brand'],
     select: { brand: true }
   });
   const models = await prisma.product.findMany({
-    where: { model: { not: null, not: '' } },
+    where: { model: { not: '' } },
     distinct: ['model'],
     select: { model: true }
   });
   const viscosities = await prisma.product.findMany({
-    where: { viscosity: { not: null, not: '' } },
+    where: { viscosity: { not: '' } },
     distinct: ['viscosity'],
     select: { viscosity: true }
   });
   const sizes = await prisma.product.findMany({
-    where: { size: { not: null, not: '' } },
+    where: { size: { not: '' } },
     distinct: ['size'],
     select: { size: true }
   });
   const categories = await prisma.product.findMany({
-    where: { category: { not: null, not: '' } },
+    where: { category: { not: '' } },
     distinct: ['category'],
     select: { category: true }
   });
@@ -272,7 +272,7 @@ export async function updateProductStock(productId: string, newTotalStock: numbe
       } else {
         let location = await prisma.location.findFirst();
         if (!location) {
-          location = await prisma.location.create({ data: { name: 'Main Warehouse' } });
+          location = await prisma.location.create({ data: { name: 'Main Warehouse', type: 'WAREHOUSE' } });
         }
         await prisma.inventory.create({
           data: {
