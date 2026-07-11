@@ -115,14 +115,13 @@ export default function ScannerClient() {
         html5QrCodeRef.current = qrCode;
 
         await qrCode.start(
-          { facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user" },
+          { 
+            facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user",
+            advanced: [{ focusMode: "continuous" }] as any
+          },
           { 
             fps: 10,
-            qrbox: { width: 250, height: 250 },
-            // Help iOS autofocus
-            videoConstraints: {
-              focusMode: "continuous"
-            } as any
+            qrbox: { width: 250, height: 250 }
           },
           (decodedText) => {
             const now = Date.now();
