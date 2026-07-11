@@ -127,34 +127,20 @@ export default function ScannerClient() {
         const onFail = () => {};
 
         try {
-          // Attempt 1: With advanced focus mode (for iOS)
-          await qrCode.start(
-            { 
-              facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user",
-              advanced: [{ focusMode: "continuous" }] as any
-            },
-            config,
-            onSuccess,
-            onFail
-          );
-        } catch (err) {
-          console.warn("Advanced constraints failed, retrying with basic constraints", err);
-          // Attempt 2: Basic fallback (for Android/older devices)
           await qrCode.start(
             { facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user" },
             config,
             onSuccess,
             onFail
           );
+        } catch (err) {
+          console.error("Camera start error", err);
+          if (isMounted) {
+            setMessage(`ไม่สามารถเปิดกล้องได้: ${(err as Error)?.name || 'โปรดตรวจสอบสิทธิ์'}`);
+            setStatus('ERROR');
+            setCameraMode('NONE');
+          }
         }
-      } catch (err) {
-        console.error("Camera start error", err);
-        if (isMounted) {
-          setMessage(`ไม่สามารถเปิดกล้องได้: ${(err as Error)?.name || 'โปรดตรวจสอบสิทธิ์'}`);
-          setStatus('ERROR');
-          setCameraMode('NONE');
-        }
-      }
     };
 
     // Need slight delay so DOM element #qr-reader is ready
