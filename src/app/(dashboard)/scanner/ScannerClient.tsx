@@ -126,21 +126,20 @@ export default function ScannerClient() {
         };
         const onFail = () => {};
 
-        try {
-          await qrCode.start(
-            { facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user" },
-            config,
-            onSuccess,
-            onFail
-          );
-        } catch (err) {
-          console.error("Camera start error", err);
-          if (isMounted) {
-            setMessage(`ไม่สามารถเปิดกล้องได้: ${(err as Error)?.name || 'โปรดตรวจสอบสิทธิ์'}`);
-            setStatus('ERROR');
-            setCameraMode('NONE');
-          }
+        await qrCode.start(
+          { facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user" },
+          config,
+          onSuccess,
+          onFail
+        );
+      } catch (err) {
+        console.error("Camera start error", err);
+        if (isMounted) {
+          setMessage(`ไม่สามารถเปิดกล้องได้: ${(err as Error)?.name || 'โปรดตรวจสอบสิทธิ์'}`);
+          setStatus('ERROR');
+          setCameraMode('NONE');
         }
+      }
     };
 
     // Need slight delay so DOM element #qr-reader is ready
