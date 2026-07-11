@@ -238,15 +238,9 @@ export default function ScannerClient() {
           <>
             <button
               onClick={() => setCameraMode('ENVIRONMENT')}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 hover:scale-105"
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 hover:scale-105"
             >
-              <Camera className="w-5 h-5" /> กล้องหลัง
-            </button>
-            <button
-              onClick={() => setCameraMode('USER')}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border shadow-sm hover:scale-105"
-            >
-              <Smartphone className="w-5 h-5" /> กล้องหน้า
+              <Camera className="w-5 h-5" /> เปิดกล้องสแกน
             </button>
           </>
         )}
