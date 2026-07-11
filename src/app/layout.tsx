@@ -9,15 +9,24 @@ export const metadata: Metadata = {
   description: "ระบบบริหารจัดการธุรกิจอัจฉริยะ",
 };
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className="dark">
-      <body className={`${inter.className} bg-[#09090b] text-slate-200 min-h-screen`}>
-        {children}
+    <html lang="th" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased transition-colors duration-300`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

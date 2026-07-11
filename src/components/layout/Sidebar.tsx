@@ -4,6 +4,20 @@ import Link from 'next/link';
 import { logout } from '@/app/actions';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  TrendingUp, 
+  CircleDollarSign, 
+  PackageSearch, 
+  ArrowDownToLine, 
+  ArrowUpFromLine, 
+  AlertTriangle, 
+  Camera, 
+  Users, 
+  LogOut,
+  ChevronDown,
+  UploadCloud
+} from 'lucide-react';
 
 export default function Sidebar({ role, onClose }: { role?: string, onClose?: () => void }) {
   const pathname = usePathname() || '';
@@ -11,99 +25,117 @@ export default function Sidebar({ role, onClose }: { role?: string, onClose?: ()
   const [isOutboundOpen, setIsOutboundOpen] = useState(pathname.startsWith('/outbound'));
 
   return (
-    <aside className="w-full h-full bg-[#18181b] border-r border-slate-800 shadow-sm flex flex-col">
-      <div className="p-6 text-center relative">
+    <aside className="w-full h-full glass border-r border-border shadow-lg flex flex-col transition-colors duration-300">
+      <div className="p-6 text-center relative border-b border-border">
         <button 
           onClick={onClose} 
-          className="md:hidden absolute top-4 right-4 text-slate-400 hover:text-white"
+          className="md:hidden absolute top-4 right-4 text-muted-foreground hover:text-foreground"
         >
           ✕
         </button>
-        <div className="w-20 h-20 mx-auto mb-3 bg-slate-900 rounded-full flex items-center justify-center overflow-hidden border border-slate-800 p-2">
+        <div className="w-20 h-20 mx-auto mb-3 bg-card rounded-full flex items-center justify-center overflow-hidden border border-border p-2 shadow-inner">
              <img src="/logo.png" alt="BizHQ" className="h-full object-contain" />
         </div>
-        <h1 className="text-xl font-bold text-orange-500">BizHQ</h1>
-        <div className="text-xs text-slate-400 mt-1 uppercase tracking-wider">{role === 'warehouse' ? 'Warehouse Manager' : 'Administrator'}</div>
+        <h1 className="text-xl font-bold text-primary tracking-wide">BizHQ</h1>
+        <div className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-semibold">{role === 'warehouse' ? 'Warehouse' : 'Administrator'}</div>
       </div>
-      <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+      
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
         {role === 'warehouse' && (
-          <Link href="/scanner" onClick={onClose} className="block px-4 py-3 rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 transition-colors font-medium">📸 โหมดสแกนเนอร์</Link>
+          <Link href="/scanner" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-medium shadow-sm">
+            <Camera className="w-5 h-5" /> โหมดสแกนเนอร์
+          </Link>
         )}
         
         {role !== 'warehouse' && (
-          <Link href="/" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname === '/' ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>📊 Dashboard</Link>
+          <Link href="/" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname === '/' ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+            <LayoutDashboard className="w-5 h-5" /> Dashboard
+          </Link>
         )}
 
         {role !== 'warehouse' && (
           <div className="pt-2 pb-2">
-            <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-2">การเงิน & ต้นทุน (Finance)</p>
+            <p className="px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 mt-2">การเงิน & ต้นทุน</p>
             <div className="space-y-1">
-              <Link href="/analytics" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/analytics') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>📈 วิเคราะห์กำไร (P&L)</Link>
-              <Link href="/costs" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/costs') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>💰 จัดการราคาทุน (Cost)</Link>
+              <Link href="/analytics" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/analytics') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                <TrendingUp className="w-5 h-5" /> วิเคราะห์กำไร
+              </Link>
+              <Link href="/costs" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/costs') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                <CircleDollarSign className="w-5 h-5" /> จัดการราคาทุน
+              </Link>
             </div>
           </div>
         )}
         
-        <Link href="/products" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/products') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>📦 สินค้า & สต๊อก</Link>
+        <Link href="/products" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+          <PackageSearch className="w-5 h-5" /> สินค้า & สต๊อก
+        </Link>
         
         {/* Inbound Dropdown */}
         <div>
           <button 
             onClick={() => setIsInboundOpen(!isInboundOpen)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/inbound') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/inbound') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
           >
-            <div className="flex items-center gap-2">📥 รับสินค้าเข้า (Inbound)</div>
-            <span className={`transform transition-transform ${isInboundOpen ? 'rotate-180' : ''}`}>▼</span>
+            <div className="flex items-center gap-3"><ArrowDownToLine className="w-5 h-5" /> รับเข้า</div>
+            <ChevronDown className={`w-4 h-4 transform transition-transform ${isInboundOpen ? 'rotate-180' : ''}`} />
           </button>
           
-          {isInboundOpen && (
-            <div className="pl-4 pr-2 mt-1 space-y-1 border-l-2 border-slate-800 ml-4 py-2">
-              <Link href="/inbound" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/inbound' ? 'bg-orange-500/10 text-orange-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isInboundOpen ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+            <div className="pl-4 pr-2 space-y-1 border-l-2 border-border ml-6 py-2">
+              <Link href="/inbound" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/inbound' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                 สแกนบาร์โค้ด
               </Link>
-              <Link href="/inbound/ocr" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/inbound/ocr' ? 'bg-orange-500/10 text-orange-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
-                🤖 รับเข้าด้วย AI (Smart OCR)
+              <Link href="/inbound/ocr" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/inbound/ocr' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                รับเข้าด้วย AI (OCR)
               </Link>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Outbound Dropdown */}
         <div>
           <button 
             onClick={() => setIsOutboundOpen(!isOutboundOpen)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/outbound') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/outbound') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
           >
-            <div className="flex items-center gap-2">📤 เบิก/จ่ายสินค้า (Outbound)</div>
-            <span className={`transform transition-transform ${isOutboundOpen ? 'rotate-180' : ''}`}>▼</span>
+            <div className="flex items-center gap-3"><ArrowUpFromLine className="w-5 h-5" /> เบิกจ่าย</div>
+            <ChevronDown className={`w-4 h-4 transform transition-transform ${isOutboundOpen ? 'rotate-180' : ''}`} />
           </button>
           
-          {isOutboundOpen && (
-            <div className="pl-4 pr-2 mt-1 space-y-1 border-l-2 border-slate-800 ml-4 py-2">
-              <Link href="/outbound/orders" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/outbound/orders' ? 'bg-orange-500/10 text-orange-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
-                📥 อัปโหลดออเดอร์ (Online Orders)
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOutboundOpen ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+            <div className="pl-4 pr-2 space-y-1 border-l-2 border-border ml-6 py-2">
+              <Link href="/outbound/orders" onClick={onClose} className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/outbound/orders' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                <UploadCloud className="w-4 h-4" /> อัปโหลดออเดอร์
               </Link>
-              <Link href="/outbound" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/outbound' ? 'bg-orange-500/10 text-orange-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
-                📦 สแกนจ่ายออก (Scanner)
+              <Link href="/outbound" onClick={onClose} className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/outbound' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                <Camera className="w-4 h-4" /> สแกนจ่ายออก
               </Link>
             </div>
-          )}
+          </div>
         </div>
-        <Link href="/defect" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/defect') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>⚠️ สินค้าเสียหาย (Defect)</Link>
+        <Link href="/defect" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/defect') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+          <AlertTriangle className="w-5 h-5" /> สินค้าเสียหาย
+        </Link>
         
         {role !== 'warehouse' && (
           <>
-            <Link href="/scanner" onClick={onClose} className="block px-4 py-3 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border border-orange-500/20 transition-colors font-medium mt-4">📸 โหมดสแกนเนอร์</Link>
-            <div className="pt-4 mt-4 border-t border-slate-800/50">
-              <Link href="/users" onClick={onClose} className={`block px-4 py-3 rounded-xl transition-colors font-medium ${pathname.startsWith('/users') ? 'bg-slate-800 text-slate-200' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'}`}>👥 ผู้ใช้งาน (Users)</Link>
+            <Link href="/scanner" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all font-medium mt-6 shadow-sm">
+              <Camera className="w-5 h-5" /> โหมดสแกนเนอร์
+            </Link>
+            <div className="pt-4 mt-4 border-t border-border">
+              <Link href="/users" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/users') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                <Users className="w-5 h-5" /> ผู้ใช้งาน
+              </Link>
             </div>
           </>
         )}
       </nav>
-      <div className="p-4 border-t border-slate-800">
+      
+      <div className="p-4 border-t border-border bg-muted/30">
         <form action={logout}>
-          <button type="submit" className="w-full py-3 px-4 rounded-xl text-slate-400 hover:text-white hover:bg-red-500/20 transition-colors text-sm font-medium flex items-center justify-center gap-2">
-            🚪 ออกจากระบบ
+          <button type="submit" className="w-full py-3 px-4 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all text-sm font-bold flex items-center justify-center gap-2">
+            <LogOut className="w-4 h-4" /> ออกจากระบบ
           </button>
         </form>
       </div>

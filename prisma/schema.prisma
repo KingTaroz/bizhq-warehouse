@@ -30,6 +30,7 @@ model Product {
   skuItems    SkuItem[]
   transactionItems TransactionItem[]
   supplierMappings SupplierMapping[]
+  costHistory CostPriceHistory[]
 }
 
 model Barcode {
@@ -158,3 +159,13 @@ model SupplierMapping {
 
   @@unique([supplierName, supplierCode])
 }
+
+model CostPriceHistory {
+  id            String   @id @default(cuid())
+  productId     String
+  costPrice     Float
+  effectiveDate DateTime @default(now())
+
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+

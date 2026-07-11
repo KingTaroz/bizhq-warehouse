@@ -142,3 +142,126 @@ export async function saveSkuMapping(platform: string, skuCode: string, barcodeC
 
   return { success: true };
 }
+
+export async function processProductBarcode(barcode: string) {
+  const barcodeRecord = await prisma.barcode.findUnique({
+    where: { code: barcode },
+    include: { product: true }
+  });
+
+  if (!barcodeRecord) {
+    return { action: 'REQUIRE_PRODUCT_MAPPING' };
+  }
+
+  return {
+    action: 'KNOWN_PRODUCT',
+    barcode: barcodeRecord,
+    product: barcodeRecord.product
+  };
+}
+
+export async function saveProductMappingAndCount(
+  barcode: string,
+  data: {
+    brand: string;
+    name: string;
+    viscosity: string;
+    size: string;
+    qtyPerCarton: number;
+    currentAvgCost: number;
+    packaging: string;
+    receiveQty: number;
+  }
+) {
+  let location = await prisma.location.findFirst({ where: { type: 'MAIN_WH' } });
+  if (!location) {
+    location = await prisma.location.create({ data: { name: 'Main Warehouse', type: 'MAIN_WH' }});
+  }
+
+  // 1. Check if barcode already exists
+  const existingBarcode = await prisma.barcode.findUnique({
+    where: { code: barcode },
+    include: { product: true }
+  });
+
+  let product;
+  
+  if (existingBarcode) {
+    // Known Product -> Update cost if changed
+    product = await prisma.product.update({
+      where: { id: existingBarcode.productId },
+      data: {
+        currentAvgCost: data.currentAvgCost
+      }
+    });
+  } else {
+    // New Product
+    product = await prisma.product.create({
+      data: {
+        brand: data.brand,
+        name: data.name,
+        viscosity: data.viscosity,
+        size: data.size,
+        qtyPerCarton: data.packaging === 'CARTON' ? data.qtyPerCarton : 1,
+        currentAvgCost: data.currentAvgCost,
+        barcodes: {
+          create: {
+            code: barcode,
+            type: data.packaging,
+            multiplier: data.packaging === 'CARTON' ? data.qtyPerCarton : 1
+          }
+        }
+      }
+    });
+  }
+
+  // Log CostPriceHistory always on receive
+  await prisma.costPriceHistory.create({
+    data: {
+      productId: product.id,
+      costPrice: data.currentAvgCost
+    }
+  });
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      type: 'INBOUND',
+      notes: `Inbound via Scanner: ${barcode}`
+    }
+  });
+
+  // Calculate total pieces to add
+  const multiplier = data.packaging === 'CARTON' ? data.qtyPerCarton : 1;
+  const qtyToAdd = data.receiveQty * multiplier;
+
+  await prisma.transactionItem.create({
+    data: {
+      transactionId: transaction.id,
+      productId: product.id,
+      locationId: location.id,
+      quantity: qtyToAdd,
+      costPrice: data.currentAvgCost
+    }
+  });
+
+  await prisma.inventory.upsert({
+    where: {
+      productId_locationId: { productId: product.id, locationId: location.id }
+    },
+    update: {
+      quantity: { increment: qtyToAdd }
+    },
+    create: {
+      productId: product.id,
+      locationId: location.id,
+      quantity: qtyToAdd 
+    }
+  });
+
+  revalidatePath('/scanner');
+  revalidatePath('/products');
+
+  return { success: true, message: `✅ นำเข้าสต๊อก ${qtyToAdd} ชิ้นสำเร็จ!` };
+}
+
+// countStockByBarcode is removed since we unified it into saveProductMappingAndCount
