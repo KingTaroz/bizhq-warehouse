@@ -163,6 +163,7 @@ export async function processProductBarcode(barcode: string) {
 export async function saveProductMappingAndCount(
   barcode: string,
   data: {
+    productId?: string;
     brand: string;
     name: string;
     viscosity: string;
@@ -192,6 +193,23 @@ export async function saveProductMappingAndCount(
       where: { id: existingBarcode.productId },
       data: {
         currentAvgCost: data.currentAvgCost
+      }
+    });
+  } else if (data.productId) {
+    // Bind to existing Product
+    product = await prisma.product.update({
+      where: { id: data.productId },
+      data: {
+        currentAvgCost: data.currentAvgCost
+      }
+    });
+    // Create new Barcode for this existing product
+    await prisma.barcode.create({
+      data: {
+        productId: product.id,
+        code: barcode,
+        type: data.packaging,
+        multiplier: data.packaging === 'CARTON' ? data.qtyPerCarton : 1
       }
     });
   } else {
@@ -265,3 +283,19 @@ export async function saveProductMappingAndCount(
 }
 
 // countStockByBarcode is removed since we unified it into saveProductMappingAndCount
+
+export async function getProductsForMapping() {
+  return await prisma.product.findMany({
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      brand: true,
+      name: true,
+      model: true,
+      viscosity: true,
+      size: true,
+      qtyPerCarton: true,
+      currentAvgCost: true
+    }
+  });
+}
