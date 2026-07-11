@@ -321,18 +321,6 @@ export default function InboundForm({
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase">ราคาทุนต่อชิ้น (บาท)</label>
-              <input 
-                required
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.currentAvgCost}
-                onChange={e => setFormData({...formData, currentAvgCost: parseFloat(e.target.value) || 0})}
-                className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-foreground focus:border-primary"
-              />
-            </div>
           </div>
 
           <div className="mt-8 flex gap-3 pt-4 border-t border-border">
