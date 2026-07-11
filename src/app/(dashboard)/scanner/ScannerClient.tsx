@@ -114,30 +114,43 @@ export default function ScannerClient() {
         const qrCode = new Html5Qrcode("qr-reader");
         html5QrCodeRef.current = qrCode;
 
-        await qrCode.start(
-          { 
-            facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user",
-            advanced: [{ focusMode: "continuous" }] as any
-          },
-          { 
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          (decodedText) => {
-            const now = Date.now();
-            if (now - lastScannedTimeRef.current < 1500) return;
-            if (decodedText === lastScannedCodeRef.current && now - lastScannedTimeRef.current < 3000) return;
-            
-            lastScannedCodeRef.current = decodedText;
-            lastScannedTimeRef.current = now;
-            handleBarcodeScanned(decodedText);
-          },
-          () => {} // Ignore spammy errors
-        );
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const onSuccess = (decodedText: string) => {
+          const now = Date.now();
+          if (now - lastScannedTimeRef.current < 1500) return;
+          if (decodedText === lastScannedCodeRef.current && now - lastScannedTimeRef.current < 3000) return;
+          
+          lastScannedCodeRef.current = decodedText;
+          lastScannedTimeRef.current = now;
+          handleBarcodeScanned(decodedText);
+        };
+        const onFail = () => {};
+
+        try {
+          // Attempt 1: With advanced focus mode (for iOS)
+          await qrCode.start(
+            { 
+              facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user",
+              advanced: [{ focusMode: "continuous" }] as any
+            },
+            config,
+            onSuccess,
+            onFail
+          );
+        } catch (err) {
+          console.warn("Advanced constraints failed, retrying with basic constraints", err);
+          // Attempt 2: Basic fallback (for Android/older devices)
+          await qrCode.start(
+            { facingMode: cameraMode === 'ENVIRONMENT' ? "environment" : "user" },
+            config,
+            onSuccess,
+            onFail
+          );
+        }
       } catch (err) {
         console.error("Camera start error", err);
         if (isMounted) {
-          setMessage("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การเข้าถึงกล้อง");
+          setMessage(`ไม่สามารถเปิดกล้องได้: ${(err as Error)?.name || 'โปรดตรวจสอบสิทธิ์'}`);
           setStatus('ERROR');
           setCameraMode('NONE');
         }
