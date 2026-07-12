@@ -20,8 +20,8 @@ export async function searchProductsForMapping(query: string) {
   return await prisma.product.findMany({
     where: {
       OR: [
-        { name: { contains: query } },
-        { brand: { contains: query } },
+        { name: { contains: query, mode: 'insensitive' } },
+        { brand: { contains: query, mode: 'insensitive' } },
         { barcodes: { some: { code: { contains: query } } } }
       ]
     },

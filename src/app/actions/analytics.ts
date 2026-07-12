@@ -16,8 +16,18 @@ export async function getAnalyticsOverview(dateRange: 'TODAY' | 'WEEK' | 'MONTH'
     dateFilter = { gte: now };
   }
 
+  // ใช้วันขายจริง (orderDate) ถ้ามี — ออเดอร์เก่าที่ไม่มี orderDate ใช้วันอัปโหลดแทน
+  // และไม่นับออเดอร์ที่ยกเลิก/คืนของ
   const orders = await prisma.platformOrder.findMany({
-    where: dateRange === 'ALL' ? {} : { createdAt: dateFilter },
+    where: {
+      status: { notIn: ['CANCELLED', 'RETURNED'] },
+      ...(dateRange === 'ALL' ? {} : {
+        OR: [
+          { orderDate: dateFilter },
+          { orderDate: null, createdAt: dateFilter }
+        ]
+      })
+    },
     include: { items: true }
   });
 

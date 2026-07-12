@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, FormEvent } from 'react'
 import { processDefect } from '@/app/actions/inventory'
@@ -84,7 +84,7 @@ export default function DefectClient() {
   };
 
   return (
-    <div className="bg-[#18181b] border border-red-900/30 rounded-2xl p-6 md:p-8 text-center min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="bg-card border border-red-500/20 rounded-2xl p-6 md:p-8 text-center min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 opacity-5 transition-colors duration-500 pointer-events-none bg-red-500" />
       
       <div className="absolute top-4 right-4 z-20">
@@ -94,7 +94,7 @@ export default function DefectClient() {
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors border text-sm ${
             useCamera 
               ? 'bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30' 
-              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+              : 'bg-muted text-foreground border-border hover:bg-muted'
           }`}
         >
           {useCamera ? '❌ ปิดกล้อง' : '📸 เปิดกล้องมือถือ'}
@@ -111,51 +111,51 @@ export default function DefectClient() {
         {status === 'SUCCESS' || status === 'ERROR' ? (
           <div className="py-8">
             <div className="text-6xl mb-4">{status === 'SUCCESS' ? '✅' : '❌'}</div>
-            <h2 className={`text-2xl font-bold mb-4 ${status === 'SUCCESS' ? 'text-green-400' : 'text-red-400'}`}>
+            <h2 className={`text-2xl font-bold mb-4 ${status === 'SUCCESS' ? 'text-green-400' : 'text-red-500'}`}>
               {status === 'SUCCESS' ? 'ตัดของเสียสำเร็จ!' : 'เกิดข้อผิดพลาด!'}
             </h2>
-            <div className="text-slate-300 mb-8 whitespace-pre-line text-lg bg-[#09090b] p-4 rounded-xl border border-slate-800">
+            <div className="text-foreground mb-8 whitespace-pre-line text-lg bg-background p-4 rounded-xl border border-border">
               {message}
             </div>
-            <button onClick={resetForm} className="px-8 py-3 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 font-semibold border border-slate-700 w-full">
+            <button onClick={resetForm} className="px-8 py-3 rounded-xl bg-muted text-foreground hover:bg-muted font-semibold border border-border w-full">
               ทำรายการต่อไป
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="text-left space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">รหัสบาร์โค้ดสินค้าที่ชำรุด (สแกนหรือพิมพ์)</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">รหัสบาร์โค้ดสินค้าที่ชำรุด (สแกนหรือพิมพ์)</label>
               <input 
                 ref={inputRef}
                 type="text" 
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                 placeholder="คลิกที่นี่แล้วสแกนบาร์โค้ด"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">จำนวนที่เสีย</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">จำนวนที่เสีย</label>
                 <input 
                   type="number" 
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                   required
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-400 mb-1">สาเหตุ (เช่น แตก, ซึม, ฉลากขาด)</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">สาเหตุ (เช่น แตก, ซึม, ฉลากขาด)</label>
                 <input 
                   type="text" 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="ระบุสาเหตุการชำรุด"
                   required
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                 />
               </div>
             </div>

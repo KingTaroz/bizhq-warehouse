@@ -56,54 +56,55 @@ export async function processScannedBarcode(barcode: string) {
     location = await prisma.location.create({ data: { name: 'Main Warehouse', type: 'MAIN_WH' }});
   }
 
-  // Create transaction
-  const transaction = await prisma.transaction.create({
-    data: {
-      type: 'OUTBOUND',
-      reference: order.orderId,
-      notes: `Auto-Deduct: ${order.trackingNo || order.orderId}`
+  // Deduct all items + mark packed atomically so a mid-loop failure
+  // can't leave inventory half-deducted
+  await prisma.$transaction(async (tx) => {
+    const transaction = await tx.transaction.create({
+      data: {
+        type: 'OUTBOUND',
+        reference: order.orderId,
+        notes: `Auto-Deduct: ${order.trackingNo || order.orderId}`
+      }
+    });
+
+    for (const { item, skuRecord } of knownSkus) {
+      const totalSetQuantity = item.quantity;
+      for (const skuItem of skuRecord.items) {
+        const deductQty = skuItem.quantity * totalSetQuantity;
+
+        await tx.transactionItem.create({
+          data: {
+            transactionId: transaction.id,
+            productId: skuItem.productId,
+            locationId: location.id,
+            quantity: deductQty
+          }
+        });
+
+        await tx.inventory.upsert({
+          where: {
+            productId_locationId: { productId: skuItem.productId, locationId: location.id }
+          },
+          update: {
+            quantity: { decrement: deductQty }
+          },
+          create: {
+            productId: skuItem.productId,
+            locationId: location.id,
+            quantity: -deductQty
+          }
+        });
+      }
     }
-  });
 
-  // Deduct inventory
-  for (const { item, skuRecord } of knownSkus) {
-    const totalSetQuantity = item.quantity;
-    for (const skuItem of skuRecord.items) {
-      const deductQty = skuItem.quantity * totalSetQuantity;
-      
-      await prisma.transactionItem.create({
-        data: {
-          transactionId: transaction.id,
-          productId: skuItem.productId,
-          locationId: location.id,
-          quantity: deductQty
-        }
-      });
-
-      await prisma.inventory.upsert({
-        where: {
-          productId_locationId: { productId: skuItem.productId, locationId: location.id }
-        },
-        update: {
-          quantity: { decrement: deductQty }
-        },
-        create: {
-          productId: skuItem.productId,
-          locationId: location.id,
-          quantity: -deductQty 
-        }
-      });
-    }
-  }
-
-  // Mark order as packed
-  await prisma.platformOrder.update({
-    where: { id: order.id },
-    data: { status: 'PACKED' }
+    await tx.platformOrder.update({
+      where: { id: order.id },
+      data: { status: 'PACKED' }
+    });
   });
 
   revalidatePath('/scanner');
-  revalidatePath('/orders');
+  revalidatePath('/outbound/orders');
   revalidatePath('/products');
 
   return { success: true, message: `ตัดสต๊อกออเดอร์ ${order.orderId} สำเร็จ!` };

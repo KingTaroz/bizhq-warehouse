@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { exportCosts, importCosts, updateSingleCost } from '@/app/actions/cost'
@@ -129,21 +129,21 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
     <div className="space-y-4">
       
       {/* Search and Actions Bar */}
-      <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-[#18181b] p-4 rounded-xl border border-slate-800">
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-card p-4 rounded-xl border border-border">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
-          <div className="text-slate-300 whitespace-nowrap">
-            เลือกแล้ว <span className="font-bold text-orange-400">{selectedIds.size}</span> รายการ
+          <div className="text-foreground whitespace-nowrap">
+            เลือกแล้ว <span className="font-bold text-orange-500">{selectedIds.size}</span> รายการ
           </div>
           <div className="relative w-full sm:w-64 md:w-80">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-slate-500">🔍</span>
+              <span className="text-muted-foreground">🔍</span>
             </div>
             <input
               type="text"
               placeholder="ค้นหา ยี่ห้อ, รุ่น, ขนาด..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+              className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
             />
           </div>
         </div>
@@ -154,8 +154,8 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
             disabled={isExporting || selectedIds.size === 0}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2
               ${selectedIds.size > 0 
-                ? 'bg-slate-700 hover:bg-slate-600 text-white' 
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+                ? 'bg-muted hover:bg-muted/70 text-foreground' 
+                : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
           >
             {isExporting ? '⏳ กำลังสร้างไฟล์...' : '📥 1. โหลดข้อมูลไปแก้ (Export)'}
           </button>
@@ -170,24 +170,24 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
 
       {message && (
         <div className={`p-4 rounded-xl text-sm font-medium ${
-          message.type === 'success' ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-900/50' : 'bg-red-900/30 text-red-400 border border-red-900/50'
+          message.type === 'success' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30' : 'bg-red-500/10 text-red-500 border border-red-500/30'
         }`}>
           {message.text}
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-[#18181b] rounded-2xl border border-slate-800 overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-900/50 text-slate-400 border-b border-slate-800 text-sm">
+              <tr className="bg-muted/50 text-muted-foreground border-b border-border text-sm">
                 <th className="px-6 py-4 w-12 text-center">
                   <input 
                     type="checkbox" 
                     checked={selectedIds.size > 0 && selectedIds.size === filteredProducts.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-slate-700 bg-slate-800 accent-orange-500"
+                    className="w-4 h-4 rounded border-border bg-muted accent-orange-500"
                   />
                 </th>
                 <th className="px-6 py-4 font-medium">ยี่ห้อ</th>
@@ -200,22 +200,22 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                 <th className="px-6 py-4 font-medium text-right">ราคาทุนเฉลี่ย</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-border">
               {filteredProducts.map(p => (
-                <tr key={p.id} className={`hover:bg-slate-800/30 transition-colors ${selectedIds.has(p.id) ? 'bg-orange-500/5' : ''}`}>
+                <tr key={p.id} className={`hover:bg-muted/30 transition-colors ${selectedIds.has(p.id) ? 'bg-orange-500/5' : ''}`}>
                   <td className="px-6 py-4 text-center">
                     <input 
                       type="checkbox" 
                       checked={selectedIds.has(p.id)}
                       onChange={() => toggleSelect(p.id)}
-                      className="w-4 h-4 rounded border-slate-700 bg-slate-800 accent-orange-500"
+                      className="w-4 h-4 rounded border-border bg-muted accent-orange-500"
                     />
                   </td>
-                  <td className="px-6 py-4 text-slate-400 font-medium">{p.brand || '-'}</td>
-                  <td className="px-6 py-4 text-slate-400">{p.model || '-'}</td>
-                  <td className="px-6 py-4 text-slate-400">{p.viscosity || '-'}</td>
-                  <td className="px-6 py-4 text-slate-400">{p.size || '-'}</td>
-                  <td className="px-6 py-4 text-center text-slate-400">{p.qtyPerCarton || 1}</td>
+                  <td className="px-6 py-4 text-muted-foreground font-medium">{p.brand || '-'}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{p.model || p.name || '-'}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{p.viscosity || '-'}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{p.size || '-'}</td>
+                  <td className="px-6 py-4 text-center text-muted-foreground">{p.qtyPerCarton || 1}</td>
                   <td className="px-6 py-4 text-right">
                     {editingId === p.id ? (
                       <div className="flex items-center justify-end gap-1">
@@ -223,7 +223,7 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                           type="number" 
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
-                          className="w-24 px-2 py-1 bg-slate-900 border border-slate-700 rounded text-right text-amber-500 focus:outline-none focus:border-orange-500"
+                          className="w-24 px-2 py-1 bg-muted border border-border rounded text-right text-amber-500 focus:outline-none focus:border-orange-500"
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveCost(p);
@@ -231,7 +231,7 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                           }}
                         />
                         <button onClick={() => handleSaveCost(p)} className="text-green-500 hover:text-green-400 p-1" title="บันทึก">💾</button>
-                        <button onClick={() => setEditingId(null)} className="text-red-500 hover:text-red-400 p-1" title="ยกเลิก">❌</button>
+                        <button onClick={() => setEditingId(null)} className="text-red-500 hover:text-red-500 p-1" title="ยกเลิก">❌</button>
                       </div>
                     ) : (
                       <div className="flex items-center justify-end gap-2 group">
@@ -243,7 +243,7 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                             setEditingId(p.id);
                             setEditValue(((p.currentAvgCost || 0) * (p.qtyPerCarton || 1)).toString());
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-orange-500 p-1"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-orange-500 p-1"
                           title="แก้ไขราคาทุนต่อลัง"
                         >
                           ✏️
@@ -251,17 +251,17 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-orange-400">
+                  <td className="px-6 py-4 text-right font-bold text-orange-500">
                     {formatCurrency(p.currentAvgCost || 0)}
                   </td>
-                  <td className="px-6 py-4 text-right text-slate-400">
+                  <td className="px-6 py-4 text-right text-muted-foreground">
                     {formatCurrency(p.currentAvgCost || 0)}
                   </td>
                 </tr>
               ))}
               {filteredProducts.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={9} className="px-6 py-8 text-center text-muted-foreground">
                     ไม่พบข้อมูลสินค้าที่ค้นหา
                   </td>
                 </tr>

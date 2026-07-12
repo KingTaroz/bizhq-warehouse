@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { parseOrderExcel, checkMappedSkus, mapPlatformSku, confirmOrdersAndDeductStock } from '@/app/actions/order'
@@ -116,14 +116,14 @@ export default function OrderClient({ products }: { products: any[] }) {
   return (
     <div className="space-y-6">
       {/* Upload Section */}
-      <div className="bg-[#18181b] p-6 rounded-2xl border border-slate-800">
+      <div className="bg-card p-6 rounded-2xl border border-border">
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="w-full sm:w-1/3">
-            <label className="block text-sm font-medium text-slate-400 mb-2">แพลตฟอร์ม</label>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">แพลตฟอร์ม</label>
             <select 
               value={platform} 
               onChange={e => setPlatform(e.target.value)}
-              className="w-full bg-[#09090b] border border-slate-700 text-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500"
+              className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500"
             >
               <option value="SHOPEE">Shopee</option>
               <option value="TIKTOK">TikTok</option>
@@ -131,12 +131,12 @@ export default function OrderClient({ products }: { products: any[] }) {
           </div>
           
           <div className="w-full sm:w-1/3">
-            <label className="block text-sm font-medium text-slate-400 mb-2">ไฟล์ออเดอร์ (Excel / CSV)</label>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">ไฟล์ออเดอร์ (Excel / CSV)</label>
             <input 
               type="file" 
               accept=".xlsx,.xls,.csv"
               onChange={e => setFile(e.target.files?.[0] || null)}
-              className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+              className="w-full text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
             />
           </div>
 
@@ -154,11 +154,11 @@ export default function OrderClient({ products }: { products: any[] }) {
 
       {/* Analysis Results */}
       {parsedData && (
-        <div className="bg-[#18181b] rounded-2xl border border-slate-800 overflow-hidden">
-          <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <div className="p-6 border-b border-border flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-bold text-slate-100">รายการ SKU ที่พบในไฟล์</h2>
-              <p className="text-slate-400 text-sm mt-1">ทั้งหมด {parsedData.orders.length} ออเดอร์ | รหัส SKU ทั้งหมด {parsedData.uniqueSkus.length} รายการ</p>
+              <h2 className="text-xl font-bold text-foreground">รายการ SKU ที่พบในไฟล์</h2>
+              <p className="text-muted-foreground text-sm mt-1">ทั้งหมด {parsedData.orders.length} ออเดอร์ | รหัส SKU ทั้งหมด {parsedData.uniqueSkus.length} รายการ</p>
             </div>
             <button 
               onClick={handleConfirmDeduct}
@@ -169,10 +169,10 @@ export default function OrderClient({ products }: { products: any[] }) {
             </button>
           </div>
 
-          <div className="p-0">
+          <div className="p-0 overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-900/50 text-slate-400 border-b border-slate-800">
+                <tr className="bg-muted/50 text-muted-foreground border-b border-border">
                   <th className="px-6 py-4 font-medium">ชื่อสินค้า</th>
                   <th className="px-6 py-4 font-medium">ตัวเลือก</th>
                   <th className="px-6 py-4 font-medium">สถานะจับคู่</th>
@@ -180,28 +180,28 @@ export default function OrderClient({ products }: { products: any[] }) {
                   <th className="px-6 py-4 font-medium text-right">จัดการ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-border">
                 {parsedData.uniqueSkus.map(sku => {
                   const status = skuStatus[sku];
                   const isMapped = status?.mapped;
 
                   return (
-                    <tr key={sku} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={sku} className="hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-200">
+                        <div className="font-medium text-foreground">
                           {parsedData.skuContext?.[sku]?.productName || sku}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-300">
+                      <td className="px-6 py-4 text-foreground">
                         {parsedData.skuContext?.[sku]?.variationName || '-'}
                       </td>
                       <td className="px-6 py-4">
                         {isMapped ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-medium border border-emerald-500/20">
                             <span className="w-2 h-2 rounded-full bg-emerald-400"></span> รู้จักแล้ว
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-sm font-medium border border-amber-500/20">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-sm font-medium border border-amber-500/20">
                             <span className="w-2 h-2 rounded-full bg-amber-400"></span> รอการจับคู่
                           </span>
                         )}
@@ -210,13 +210,13 @@ export default function OrderClient({ products }: { products: any[] }) {
                         {isMapped ? (
                           <div className="flex flex-col gap-1">
                             {status.items.map((item: any, idx: number) => (
-                              <div key={idx} className="text-sm text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700 w-max">
-                                <span className="text-orange-400 font-bold">{item.quantity}x</span> {item.product.name}
+                              <div key={idx} className="text-sm text-foreground bg-muted px-3 py-1.5 rounded-lg border border-border w-max">
+                                <span className="text-orange-500 font-bold">{item.quantity}x</span> {item.product.name}
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-slate-500 text-sm">-</span>
+                          <span className="text-muted-foreground text-sm">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -226,7 +226,7 @@ export default function OrderClient({ products }: { products: any[] }) {
                               setMappingSku(sku);
                               setBundleItems([]);
                             }}
-                            className="px-4 py-1.5 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-lg text-sm font-medium transition-colors border border-amber-500/20"
+                            className="px-4 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 rounded-lg text-sm font-medium transition-colors border border-amber-500/20"
                           >
                             จับคู่เซ็ต (Map)
                           </button>
@@ -244,34 +244,34 @@ export default function OrderClient({ products }: { products: any[] }) {
       {/* Mapping Modal */}
       {mappingSku && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-          <div className="bg-[#18181b] border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-100">จับคู่สินค้าจัดเซ็ต (Bundle Builder)</h2>
-              <button onClick={() => setMappingSku(null)} className="text-slate-500 hover:text-white">✕</button>
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h2 className="text-xl font-bold text-foreground">จับคู่สินค้าจัดเซ็ต (Bundle Builder)</h2>
+              <button onClick={() => setMappingSku(null)} className="text-muted-foreground hover:text-foreground">✕</button>
             </div>
             
             <div className="p-6">
-              <div className="mb-6 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                <span className="text-slate-400 text-sm">รหัส SKU จากแพลตฟอร์ม:</span>
-                <div className="text-orange-400 font-mono text-lg font-bold mt-1">{mappingSku}</div>
+              <div className="mb-6 p-4 bg-muted border border-border rounded-xl">
+                <span className="text-muted-foreground text-sm">รหัส SKU จากแพลตฟอร์ม:</span>
+                <div className="text-orange-500 font-mono text-lg font-bold mt-1">{mappingSku}</div>
               </div>
 
               {/* Added Items List */}
               <div className="mb-6 space-y-2">
-                <h3 className="text-sm font-medium text-slate-300 mb-2">สินค้าในเซ็ตนี้ (1 ออเดอร์จะต้องตัดสต๊อกอะไรบ้าง):</h3>
+                <h3 className="text-sm font-medium text-foreground mb-2">สินค้าในเซ็ตนี้ (1 ออเดอร์จะต้องตัดสต๊อกอะไรบ้าง):</h3>
                 {bundleItems.length === 0 ? (
-                  <div className="text-center p-4 border border-dashed border-slate-700 rounded-xl text-slate-500 text-sm">
+                  <div className="text-center p-4 border border-dashed border-border rounded-xl text-muted-foreground text-sm">
                     ยังไม่มีสินค้าในเซ็ต
                   </div>
                 ) : (
                   bundleItems.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                      <div className="font-medium text-slate-200">{item.productName}</div>
+                    <div key={idx} className="flex justify-between items-center bg-muted/50 p-3 rounded-xl border border-border">
+                      <div className="font-medium text-foreground">{item.productName}</div>
                       <div className="flex items-center gap-4">
-                        <span className="text-orange-400 font-bold">จำนวน: {item.quantity}</span>
+                        <span className="text-orange-500 font-bold">จำนวน: {item.quantity}</span>
                         <button 
                           onClick={() => setBundleItems(prev => prev.filter((_, i) => i !== idx))}
-                          className="text-red-400 hover:text-red-300 text-sm font-medium"
+                          className="text-red-500 hover:text-red-500 text-sm font-medium"
                         >
                           ลบ
                         </button>
@@ -282,13 +282,13 @@ export default function OrderClient({ products }: { products: any[] }) {
               </div>
 
               {/* Add Item Form */}
-              <div className="flex gap-2 items-end border-t border-slate-800 pt-6">
+              <div className="flex gap-2 items-end border-t border-border pt-6">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-slate-400 mb-2">ค้นหาสินค้าในร้าน</label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">ค้นหาสินค้าในร้าน</label>
                   <select 
                     value={selectedProduct}
                     onChange={e => setSelectedProduct(e.target.value)}
-                    className="w-full bg-[#09090b] border border-slate-700 text-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500"
+                    className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500"
                   >
                     <option value="">-- เลือกสินค้า --</option>
                     {products.map(p => (
@@ -297,28 +297,28 @@ export default function OrderClient({ products }: { products: any[] }) {
                   </select>
                 </div>
                 <div className="w-24">
-                  <label className="block text-sm font-medium text-slate-400 mb-2">จำนวน</label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">จำนวน</label>
                   <input 
                     type="number" 
                     min="1" 
                     value={selectedQty}
                     onChange={e => setSelectedQty(parseInt(e.target.value) || 1)}
-                    className="w-full bg-[#09090b] border border-slate-700 text-slate-200 rounded-xl px-4 py-2 text-center focus:outline-none focus:border-orange-500"
+                    className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 text-center focus:outline-none focus:border-orange-500"
                   />
                 </div>
                 <button 
                   onClick={handleAddBundleItem}
                   disabled={!selectedProduct}
-                  className="px-4 py-2 bg-slate-800 text-slate-200 rounded-xl border border-slate-700 hover:bg-slate-700 transition-colors font-medium disabled:opacity-50"
+                  className="px-4 py-2 bg-muted text-foreground rounded-xl border border-border hover:bg-muted transition-colors font-medium disabled:opacity-50"
                 >
                   + เพิ่มชิ้นนี้
                 </button>
               </div>
 
-              <div className="mt-8 pt-4 flex justify-end gap-3 border-t border-slate-800">
+              <div className="mt-8 pt-4 flex justify-end gap-3 border-t border-border">
                 <button 
                   onClick={() => setMappingSku(null)}
-                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
                   ยกเลิก
                 </button>

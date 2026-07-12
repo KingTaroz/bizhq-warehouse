@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 import { Package, ArrowDownToLine, ArrowUpFromLine, AlertTriangle, TrendingUp, Activity } from 'lucide-react'
 

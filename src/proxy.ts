@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifyToken } from '@/lib/auth'
 
-export function middleware(request: NextRequest) {
-  const role = request.cookies.get('auth_role')?.value
+export function proxy(request: NextRequest) {
+  const role = verifyToken(request.cookies.get('auth_token')?.value)
   const isLoginPage = request.nextUrl.pathname.startsWith('/login')
 
   if (!role && !isLoginPage) {

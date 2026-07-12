@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { logout } from '@/app/actions';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -16,7 +17,8 @@ import {
   Users, 
   LogOut,
   ChevronDown,
-  UploadCloud
+  UploadCloud,
+  Store
 } from 'lucide-react';
 
 export default function Sidebar({ role, onClose }: { role?: string, onClose?: () => void }) {
@@ -34,7 +36,7 @@ export default function Sidebar({ role, onClose }: { role?: string, onClose?: ()
           ✕
         </button>
         <div className="w-20 h-20 mx-auto mb-3 bg-card rounded-full flex items-center justify-center overflow-hidden border border-border p-2 shadow-inner">
-             <img src="/logo.png" alt="BizHQ" className="h-full object-contain" />
+             <Image src="/logo.png" alt="BizHQ" width={80} height={80} className="h-full w-auto object-contain" />
         </div>
         <h1 className="text-xl font-bold text-primary tracking-wide">BizHQ</h1>
         <div className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-semibold">{role === 'warehouse' ? 'Warehouse' : 'Administrator'}</div>
@@ -69,6 +71,9 @@ export default function Sidebar({ role, onClose }: { role?: string, onClose?: ()
         
         <Link href="/products" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
           <PackageSearch className="w-5 h-5" /> สินค้า & สต๊อก
+        </Link>
+        <Link href="/platform-products" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/platform-products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+          <Store className="w-5 h-5" /> สินค้าออนไลน์
         </Link>
         
         {/* Inbound Dropdown */}

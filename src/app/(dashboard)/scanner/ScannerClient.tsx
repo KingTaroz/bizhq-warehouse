@@ -25,12 +25,19 @@ export default function ScannerClient() {
   const lastScannedCodeRef = useRef<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // On touch devices, focusing the hidden input pops up the on-screen keyboard,
+  // so only auto-focus when a physical scanner (mouse/keyboard device) is likely.
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    setIsTouchDevice(window.matchMedia('(pointer: coarse)').matches);
+  }, []);
+
   // Auto focus for physical scanner
   useEffect(() => {
-    if (cameraMode === 'NONE' && status !== 'LOADING') {
+    if (!isTouchDevice && cameraMode === 'NONE' && status !== 'LOADING') {
       inputRef.current?.focus();
     }
-  }, [status, cameraMode]);
+  }, [status, cameraMode, isTouchDevice]);
 
   const statusRef = useRef(status);
   const modeRef = useRef(mode);
@@ -184,7 +191,7 @@ export default function ScannerClient() {
     setMappingData(null);
     setScannedItems({});
     lastScannedCodeRef.current = '';
-    if (cameraMode === 'NONE') inputRef.current?.focus();
+    if (!isTouchDevice && cameraMode === 'NONE') inputRef.current?.focus();
   };
 
   return (
@@ -211,7 +218,7 @@ export default function ScannerClient() {
 
       <div 
         className="glass rounded-[2rem] p-4 md:p-10 text-center min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden shadow-lg border border-border/50" 
-        onClick={() => { if (cameraMode === 'NONE' && status !== 'PRODUCT_MAPPING') inputRef.current?.focus(); }}
+        onClick={() => { if (!isTouchDevice && cameraMode === 'NONE' && status !== 'PRODUCT_MAPPING') inputRef.current?.focus(); }}
       >
         
         {/* Background Glow based on status */}
@@ -337,19 +344,42 @@ export default function ScannerClient() {
           </div>
         )}
 
-        {/* Hidden Input for Scanner (Only if not using camera) */}
+        {/* Barcode input: hidden on desktop (physical scanner types into it),
+            visible manual-entry field on touch devices */}
         {cameraMode === 'NONE' && (
-          <form onSubmit={handleFormSubmit} className="opacity-0 absolute -z-10 h-0 w-0 overflow-hidden">
-            <input 
+          <form
+            onSubmit={handleFormSubmit}
+            className={isTouchDevice
+              ? 'flex gap-2 max-w-sm mx-auto mb-6'
+              : 'opacity-0 absolute -z-10 h-0 w-0 overflow-hidden'}
+          >
+            <input
               ref={inputRef}
-              type="text" 
+              type="text"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
               disabled={status === 'LOADING'}
+              inputMode={isTouchDevice ? 'text' : undefined}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder={isTouchDevice ? 'พิมพ์บาร์โค้ด / Tracking No.' : undefined}
+              className={isTouchDevice
+                ? 'flex-1 bg-background border border-border rounded-xl px-4 py-3 text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none'
+                : undefined}
               onBlur={() => {
-                if (status !== 'LOADING' && cameraMode === 'NONE') setTimeout(() => inputRef.current?.focus(), 50);
+                if (!isTouchDevice && status !== 'LOADING' && cameraMode === 'NONE') setTimeout(() => inputRef.current?.focus(), 50);
               }}
             />
+            {isTouchDevice && (
+              <button
+                type="submit"
+                disabled={status === 'LOADING' || !barcode.trim()}
+                className="px-5 py-3 rounded-xl bg-primary text-primary-foreground font-bold disabled:opacity-50"
+              >
+                ตกลง
+              </button>
+            )}
           </form>
         )}
 

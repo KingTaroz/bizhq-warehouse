@@ -8,7 +8,7 @@ export default function ClientLayout({ children, role }: { children: React.React
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#09090b]">
+    <div className="flex min-h-screen bg-background">
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div 

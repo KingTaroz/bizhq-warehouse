@@ -4,6 +4,27 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import * as xlsx from 'xlsx'
 
+function parseExcelDate(v: unknown): Date | null {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') {
+    // Excel serial date (days since 1899-12-30)
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const s = String(v).trim();
+  let d: Date | null = null;
+  // DD/MM/YYYY[ HH:mm] (Shopee TH)
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(.*)$/);
+  if (m) {
+    d = new Date(`${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}${m[4] || ''}`);
+  }
+  if (!d || isNaN(d.getTime())) d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  // Buddhist year guard (พ.ศ. → ค.ศ.)
+  if (d.getFullYear() > 2400) d.setFullYear(d.getFullYear() - 543);
+  return d;
+}
+
 export async function parseOrderExcel(formData: FormData) {
   try {
     const file = formData.get('file') as File;
@@ -25,9 +46,17 @@ export async function parseOrderExcel(formData: FormData) {
       const orderId = String(row['Order ID'] || row['หมายเลขคำสั่งซื้อ'] || row['Order ID'] || '').trim();
       if (!orderId || orderId === 'undefined') continue;
 
+      // Skip cancelled rows from the platform file — must not deduct stock
+      const rowStatus = String(row['Order Status'] || row['สถานะการสั่งซื้อ'] || row['สถานะคำสั่งซื้อ'] || row['สถานะ'] || '').trim();
+      if (rowStatus.includes('ยกเลิก') || /cancel/i.test(rowStatus)) continue;
+
+      const orderDate = parseExcelDate(
+        row['วันที่ทำการสั่งซื้อ'] ?? row['เวลาการสั่งซื้อ'] ?? row['Created Time'] ?? row['Order created time'] ?? row['Order Time'] ?? row['วันที่สั่งซื้อ']
+      );
+
       const trackingNo = String(row['Tracking No'] || row['หมายเลขติดตามพัสดุ'] || '').trim();
       
-      let skuCode = String(row['SKU Reference'] || row['เลขรหัสอ้างอิง SKU (SKU Reference)'] || row['SKU'] || row['รหัสสินค้า'] || row['Seller SKU'] || '').trim();
+      let skuCode = String(row['SKU Reference'] || row['เลขรหัสอ้างอิง SKU (SKU Reference)'] || row['เลขอ้างอิง SKU (SKU Reference No.)'] || row['SKU'] || row['รหัสสินค้า'] || row['Seller SKU'] || '').trim();
       
       // Fallback: If seller never set a SKU, use Product Name + Variation Name as the identifier
       if (!skuCode || skuCode === 'undefined') {
@@ -49,11 +78,13 @@ export async function parseOrderExcel(formData: FormData) {
       const unitPriceStr = String(row['Deal Price'] || row['ราคาขาย'] || row['ราคาต่อหน่วย'] || row['ราคา'] || '0').replace(/[^0-9.]/g, '');
       const unitPrice = parseFloat(unitPriceStr) || 0;
 
-      const totalAmountStr = String(row['Total Amount'] || row['ยอดสุทธิ'] || row['ยอดเงินที่ได้รับ'] || '0').replace(/[^0-9.]/g, '');
+      const totalAmountStr = String(row['Total Amount'] || row['ยอดสุทธิ'] || row['ยอดเงินที่ได้รับ'] || row['จำนวนเงินทั้งหมด'] || '0').replace(/[^0-9.]/g, '');
       const totalAmount = parseFloat(totalAmountStr) || 0;
 
-      const feeStr = String(row['Selling Fee'] || row['ค่าธรรมเนียมการขาย'] || row['ค่าธรรมเนียมการทำธุรกรรม'] || row['ค่าธรรมเนียม'] || '0').replace(/[^0-9.]/g, '');
-      const platformFee = parseFloat(feeStr) || 0;
+      // Shopee: ค่าคอมมิชชั่น + Transaction Fee เป็นรายแถวสินค้า → รวมเป็นค่าธรรมเนียมออเดอร์
+      const num = (v: unknown) => parseFloat(String(v ?? '0').replace(/[^0-9.]/g, '')) || 0;
+      const platformFee = num(row['ค่าคอมมิชชั่น']) + num(row['Transaction Fee'])
+        + num(row['Selling Fee'] || row['ค่าธรรมเนียมการขาย'] || row['ค่าธรรมเนียมการทำธุรกรรม'] || row['ค่าธรรมเนียม']);
 
       if (!ordersMap.has(orderId)) {
         ordersMap.set(orderId, {
@@ -61,6 +92,7 @@ export async function parseOrderExcel(formData: FormData) {
           trackingNo: trackingNo || null,
           totalAmount,
           platformFee,
+          orderDate: orderDate ? orderDate.toISOString() : null,
           items: []
         });
       } else {
@@ -188,7 +220,8 @@ export async function confirmOrdersAndDeductStock(platform: string, orders: any[
             trackingNo: o.trackingNo,
             status: 'PACKED', // Auto-marked as packed since they will handle physical packing manually
             totalAmount: o.totalAmount || 0,
-            platformFee: o.platformFee || 0
+            platformFee: o.platformFee || 0,
+            orderDate: o.orderDate ? new Date(o.orderDate) : null
           }
         });
 
@@ -263,10 +296,82 @@ export async function confirmOrdersAndDeductStock(platform: string, orders: any[
       }
     });
 
-    revalidatePath('/orders');
+    revalidatePath('/outbound/orders');
     return { success: true, count: totalOrdersProcessed };
   } catch (error: any) {
     console.error('Order confirm error:', error);
     return { error: error.message };
   }
+}
+
+export async function getRecentOrders(query?: string) {
+  return await prisma.platformOrder.findMany({
+    where: query ? {
+      OR: [
+        { orderId: { contains: query, mode: 'insensitive' } },
+        { trackingNo: { contains: query, mode: 'insensitive' } }
+      ]
+    } : {},
+    orderBy: { createdAt: 'desc' },
+    take: 30,
+    include: { items: true }
+  });
+}
+
+// ยกเลิกได้เฉพาะออเดอร์ที่ยังไม่ตัดสต๊อก (PENDING) — ไม่มีของต้องคืน
+export async function cancelOrder(id: string) {
+  const order = await prisma.platformOrder.findUnique({ where: { id } });
+  if (!order) return { error: 'ไม่พบออเดอร์' };
+  if (order.status !== 'PENDING') return { error: 'ยกเลิกได้เฉพาะออเดอร์ที่ยังไม่ตัดสต๊อก (ถ้าตัดแล้วใช้ "รับคืนของ")' };
+
+  await prisma.platformOrder.update({ where: { id }, data: { status: 'CANCELLED' } });
+  revalidatePath('/outbound/orders');
+  return { success: true };
+}
+
+// รับคืนของ: ย้อนการตัดสต๊อกตามรายการที่บันทึกไว้จริงตอนตัด (ไม่คำนวณใหม่จาก mapping ที่อาจเปลี่ยนไปแล้ว)
+export async function returnOrder(id: string) {
+  const order = await prisma.platformOrder.findUnique({ where: { id } });
+  if (!order) return { error: 'ไม่พบออเดอร์' };
+  if (order.status !== 'PACKED') return { error: 'รับคืนได้เฉพาะออเดอร์ที่ตัดสต๊อกแล้ว' };
+
+  // การตัดมี 2 ทาง: อัปโหลดไฟล์ (ref ONLINE-...) หรือยิง tracking ที่หน้าสแกน (ref = orderId)
+  const refs = [`ONLINE-${order.platform}-${order.orderId}`, order.orderId];
+  const outTx = await prisma.transaction.findFirst({
+    where: { type: 'OUTBOUND', reference: { in: refs } },
+    include: { items: true },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  let restocked = 0;
+  await prisma.$transaction(async (tx) => {
+    if (outTx && outTx.items.length > 0) {
+      const ret = await tx.transaction.create({
+        data: { type: 'RETURN', reference: order.orderId, notes: `รับคืนของออเดอร์ ${order.orderId}` }
+      });
+      for (const it of outTx.items) {
+        await tx.transactionItem.create({
+          data: {
+            transactionId: ret.id,
+            productId: it.productId,
+            locationId: it.locationId,
+            quantity: it.quantity,
+            costPrice: it.costPrice
+          }
+        });
+        await tx.inventory.upsert({
+          where: { productId_locationId: { productId: it.productId, locationId: it.locationId } },
+          update: { quantity: { increment: it.quantity } },
+          create: { productId: it.productId, locationId: it.locationId, quantity: it.quantity }
+        });
+        restocked++;
+      }
+    }
+    await tx.platformOrder.update({ where: { id }, data: { status: 'RETURNED' } });
+  });
+
+  revalidatePath('/outbound/orders');
+  revalidatePath('/products');
+  revalidatePath('/analytics');
+  return { success: true, restocked };
 }

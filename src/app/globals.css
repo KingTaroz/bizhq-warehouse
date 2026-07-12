@@ -42,6 +42,13 @@
   .glass {
     @apply bg-card backdrop-blur-md border border-border;
   }
+  /* Safe area padding for phones with home indicator / notch */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+  }
 }
 
 body {

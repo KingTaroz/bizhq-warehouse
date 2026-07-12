@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, FormEvent } from 'react'
 import { processInbound } from '@/app/actions/inventory'
@@ -85,7 +85,7 @@ export default function InboundClient() {
   };
 
   return (
-    <div className="bg-[#18181b] border border-slate-800 rounded-2xl p-6 md:p-8 text-center min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="bg-card border border-border rounded-2xl p-6 md:p-8 text-center min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden">
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setUseCamera(!useCamera)}
@@ -93,7 +93,7 @@ export default function InboundClient() {
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors border text-sm ${
             useCamera 
               ? 'bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30' 
-              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+              : 'bg-muted text-foreground border-border hover:bg-muted'
           }`}
         >
           {useCamera ? '❌ ปิดกล้อง' : '📸 เปิดกล้องมือถือ'}
@@ -102,7 +102,7 @@ export default function InboundClient() {
 
       <div className="relative z-10 w-full max-w-md mx-auto mt-8 md:mt-0">
         {useCamera && (
-          <div className="mb-6 w-full mx-auto overflow-hidden rounded-2xl border-2 border-slate-700 bg-black">
+          <div className="mb-6 w-full mx-auto overflow-hidden rounded-2xl border-2 border-border bg-black">
             <div id="qr-reader-inbound" className="w-full"></div>
           </div>
         )}
@@ -110,50 +110,50 @@ export default function InboundClient() {
         {status === 'SUCCESS' || status === 'ERROR' ? (
           <div className="py-8">
             <div className="text-6xl mb-4">{status === 'SUCCESS' ? '✅' : '❌'}</div>
-            <h2 className={`text-2xl font-bold mb-4 ${status === 'SUCCESS' ? 'text-green-400' : 'text-red-400'}`}>
+            <h2 className={`text-2xl font-bold mb-4 ${status === 'SUCCESS' ? 'text-green-400' : 'text-red-500'}`}>
               {status === 'SUCCESS' ? 'รับเข้าสำเร็จ!' : 'เกิดข้อผิดพลาด!'}
             </h2>
-            <div className="text-slate-300 mb-8 whitespace-pre-line text-lg bg-[#09090b] p-4 rounded-xl border border-slate-800">
+            <div className="text-foreground mb-8 whitespace-pre-line text-lg bg-background p-4 rounded-xl border border-border">
               {message}
             </div>
-            <button onClick={resetForm} className="px-8 py-3 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 font-semibold border border-slate-700 w-full">
+            <button onClick={resetForm} className="px-8 py-3 rounded-xl bg-muted text-foreground hover:bg-muted font-semibold border border-border w-full">
               ทำรายการต่อไป
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="text-left space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">รหัสบาร์โค้ด (สแกนหรือพิมพ์)</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">รหัสบาร์โค้ด (สแกนหรือพิมพ์)</label>
               <input 
                 ref={inputRef}
                 type="text" 
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 placeholder="คลิกที่นี่แล้วสแกนบาร์โค้ด"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">จำนวนที่รับเข้า</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">จำนวนที่รับเข้า</label>
                 <input 
                   type="number" 
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                   required
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">เลขที่อ้างอิง (ถ้ามี)</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">เลขที่อ้างอิง (ถ้ามี)</label>
                 <input 
                   type="text" 
                   value={reference}
                   onChange={(e) => setReference(e.target.value)}
                   placeholder="เช่น PO-12345"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                 />
               </div>
             </div>

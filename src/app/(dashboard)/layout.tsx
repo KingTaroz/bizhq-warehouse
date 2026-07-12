@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 import ClientLayout from "./ClientLayout";
 
 export default async function DashboardLayout({
@@ -7,7 +8,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const role = cookieStore.get('auth_role')?.value;
+  const role = verifyToken(cookieStore.get('auth_token')?.value) ?? undefined;
 
   return (
     <ClientLayout role={role}>

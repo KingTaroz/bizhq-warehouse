@@ -31,6 +31,28 @@ model Product {
   transactionItems TransactionItem[]
   supplierMappings SupplierMapping[]
   costHistory CostPriceHistory[]
+  platformProducts PlatformProduct[]
+}
+
+// แคตตาล็อกสินค้าบนแพลตฟอร์ม (Shopee/TikTok) 1 แถว = 1 ตัวเลือกสินค้า
+// productId = จับคู่กับสินค้าจริงแล้ว (null = รอจับคู่เอง)
+model PlatformProduct {
+  id            String   @id @default(cuid())
+  platform      String   // SHOPEE, TIKTOK
+  itemId        String   // รหัสสินค้าบนแพลตฟอร์ม
+  variationId   String   @default("") // รหัสตัวเลือก ("" = ไม่มีตัวเลือก)
+  itemName      String
+  variationName String?
+  price         Float    @default(0)
+  stock         Int      @default(0)
+  productId     String?
+  quantity      Int      @default(1) // จำนวนชิ้นจริงต่อ 1 หน่วยขาย (เช่น ยกลัง x12)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@unique([platform, itemId, variationId])
 }
 
 model Barcode {
@@ -129,9 +151,10 @@ model PlatformOrder {
   platform      String   // SHOPEE, TIKTOK
   orderId       String   @unique
   trackingNo    String?  @unique
-  status        String   @default("PENDING") // PENDING, PACKED
+  status        String   @default("PENDING") // PENDING, PACKED, CANCELLED, RETURNED
   totalAmount   Float    @default(0)
   platformFee   Float    @default(0)
+  orderDate     DateTime? // วันที่ขายจริงจากไฟล์แพลตฟอร์ม (createdAt = วันอัปโหลด)
   createdAt     DateTime @default(now())
 
   items         PlatformOrderItem[]

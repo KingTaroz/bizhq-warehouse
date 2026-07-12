@@ -296,12 +296,27 @@ export default function InboundForm({
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-muted-foreground uppercase">จำนวนที่สแกนรับเข้า</label>
-              <input 
+              <input
                 required
                 type="number"
                 min="1"
+                inputMode="numeric"
                 value={formData.receiveQty}
                 onChange={e => setFormData({...formData, receiveQty: parseInt(e.target.value) || 1})}
+                className="w-full bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-2 text-foreground font-bold focus:border-orange-500 text-lg"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase">ราคาทุน / ชิ้น (บาท)</label>
+              <input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={formData.currentAvgCost}
+                onChange={e => setFormData({...formData, currentAvgCost: parseFloat(e.target.value) || 0})}
                 className="w-full bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-2 text-foreground font-bold focus:border-orange-500 text-lg"
               />
             </div>
@@ -309,10 +324,11 @@ export default function InboundForm({
             {formData.packaging === 'CARTON' && (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase">จำนวนชิ้นต่อ 1 ลัง</label>
-                <input 
+                <input
                   required
                   type="number"
                   min="2"
+                  inputMode="numeric"
                   value={formData.qtyPerCarton}
                   onChange={e => setFormData({...formData, qtyPerCarton: parseInt(e.target.value) || 1})}
                   disabled={isInputDisabled}

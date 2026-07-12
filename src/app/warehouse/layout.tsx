@@ -8,7 +8,7 @@ export default function WarehouseLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20 transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground pb-24 transition-colors duration-300">
       {/* Mobile-friendly Header */}
       <header className="glass p-4 sticky top-0 z-50">
         <div className="flex justify-between items-center max-w-md mx-auto">
