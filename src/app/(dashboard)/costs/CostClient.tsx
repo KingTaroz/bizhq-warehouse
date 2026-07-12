@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { exportCosts, importCosts, updateSingleCost } from '@/app/actions/cost'
 import { useRouter } from 'next/navigation'
+import { Pagination } from '@/components/Pagination'
 
 export default function CostClient({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter();
@@ -13,6 +14,8 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const handleSaveCost = async (p: any) => {
     const newCartonCost = parseFloat(editValue);
@@ -125,6 +128,9 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(val);
   };
 
+  const totalItems = filteredProducts.length;
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-4">
       
@@ -142,7 +148,10 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
               type="text"
               placeholder="ค้นหา ยี่ห้อ, รุ่น, ขนาด..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
             />
           </div>
@@ -201,7 +210,7 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filteredProducts.map(p => (
+              {paginatedProducts.map(p => (
                 <tr key={p.id} className={`hover:bg-muted/30 transition-colors ${selectedIds.has(p.id) ? 'bg-orange-500/5' : ''}`}>
                   <td className="px-6 py-4 text-center">
                     <input 
@@ -270,6 +279,19 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
           </table>
         </div>
       </div>
+
+      {totalItems > 0 && (
+        <Pagination 
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(items) => {
+            setItemsPerPage(items);
+            setCurrentPage(1);
+          }}
+        />
+      )}
     </div>
   )
 }

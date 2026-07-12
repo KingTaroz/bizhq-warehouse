@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { createProduct, importProductsExcel, deleteProduct, addBarcodeToProduct, deleteBarcode, verifyAndDeleteProduct, updateProductStock } from '@/app/actions/product'
 import * as xlsx from 'xlsx'
+import { Pagination } from '@/components/Pagination'
 
 interface ProductClientProps {
   initialProducts: any[];
@@ -19,6 +20,8 @@ export default function ProductClient({ initialProducts, options, role }: Produc
   const [manageBarcodesProductId, setManageBarcodesProductId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
 
   const [editingStockId, setEditingStockId] = useState<string | null>(null);
   const [editingStockValue, setEditingStockValue] = useState<string>('');
@@ -103,6 +106,9 @@ export default function ProductClient({ initialProducts, options, role }: Produc
     }
   };
 
+  const totalItems = products.length;
+  const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       {/* Action Bar */}
@@ -113,7 +119,10 @@ export default function ProductClient({ initialProducts, options, role }: Produc
             placeholder="ค้นหา (บาร์โค้ด, ชื่อ, ยี่ห้อ, หมวดหมู่)..." 
             className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500 transition-colors"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
@@ -158,7 +167,7 @@ export default function ProductClient({ initialProducts, options, role }: Produc
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                paginatedProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-semibold text-foreground">{product.brand || '-'}</span>
@@ -251,6 +260,19 @@ export default function ProductClient({ initialProducts, options, role }: Produc
           </table>
         </div>
       </div>
+
+      {totalItems > 0 && (
+        <Pagination 
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(items) => {
+            setItemsPerPage(items);
+            setCurrentPage(1);
+          }}
+        />
+      )}
 
       {/* Add Product Modal */}
       {isModalOpen && (

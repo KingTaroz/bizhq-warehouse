@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { matchPlatformProduct, unmatchPlatformProduct, autoMatchPlatformProducts } from '@/app/actions/platform'
 import { useRouter } from 'next/navigation'
+import { Pagination } from '@/components/Pagination'
 
 export default function PlatformProductClient({ items, products }: { items: any[], products: any[] }) {
   const router = useRouter()
@@ -10,6 +11,8 @@ export default function PlatformProductClient({ items, products }: { items: any[
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
 
   // แถวที่กำลังจับคู่
   const [mappingId, setMappingId] = useState<string | null>(null)
@@ -27,7 +30,7 @@ export default function PlatformProductClient({ items, products }: { items: any[
         return terms.every(t => text.includes(t))
       })
     }
-    return list.slice(0, 200)
+    return list
   }, [items, tab, search])
 
   const productResults = useMemo(() => {
@@ -70,13 +73,16 @@ export default function PlatformProductClient({ items, products }: { items: any[
     router.refresh()
   }
 
+  const totalItems = filtered.length;
+  const paginatedItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-col lg:flex-row gap-4 justify-between bg-card p-4 rounded-xl border border-border">
         <div className="flex flex-wrap items-center gap-2">
           {([['UNMATCHED', `รอจับคู่ (${unmatchedCount})`], ['MATCHED', `จับคู่แล้ว (${items.length - unmatchedCount})`], ['ALL', `ทั้งหมด (${items.length})`]] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)}
+            <button key={key} onClick={() => { setTab(key); setCurrentPage(1); }}
               className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${tab === key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
               {label}
             </button>
@@ -87,7 +93,7 @@ export default function PlatformProductClient({ items, products }: { items: any[
             type="text"
             placeholder="ค้นหาชื่อสินค้า Shopee..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
             className="flex-1 lg:w-72 px-4 py-2 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
           />
           <button onClick={handleAutoMatch} disabled={busy}
@@ -106,7 +112,7 @@ export default function PlatformProductClient({ items, products }: { items: any[
         {filtered.length === 0 && (
           <div className="text-center text-muted-foreground py-12 bg-card rounded-2xl border border-border">ไม่มีรายการ</div>
         )}
-        {filtered.map(pp => (
+        {paginatedItems.map(pp => (
           <div key={pp.id} className="bg-card border border-border rounded-2xl p-4">
             <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between">
               <div className="min-w-0">
@@ -172,10 +178,20 @@ export default function PlatformProductClient({ items, products }: { items: any[
             )}
           </div>
         ))}
-        {filtered.length === 200 && (
-          <div className="text-center text-muted-foreground text-sm">แสดง 200 รายการแรก — ใช้ช่องค้นหาเพื่อกรอง</div>
-        )}
       </div>
+
+      {totalItems > 0 && (
+        <Pagination 
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(items) => {
+            setItemsPerPage(items);
+            setCurrentPage(1);
+          }}
+        />
+      )}
     </div>
   )
 }
