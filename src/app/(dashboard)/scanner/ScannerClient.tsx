@@ -97,13 +97,17 @@ export default function ScannerClient() {
   useEffect(() => {
     if (cameraMode === 'NONE') {
       if (html5QrCodeRef.current) {
-        // Only stop if currently scanning
-        if (html5QrCodeRef.current.isScanning) {
-          html5QrCodeRef.current.stop().then(() => {
-            html5QrCodeRef.current?.clear();
-          }).catch(err => console.error(err));
-        } else {
-          html5QrCodeRef.current.clear();
+        try {
+          const isScanning = html5QrCodeRef.current.isScanning || (typeof html5QrCodeRef.current.getState === 'function' && html5QrCodeRef.current.getState() === 2);
+          if (isScanning) {
+            html5QrCodeRef.current.stop().then(() => {
+              try { html5QrCodeRef.current?.clear(); } catch(e) {}
+            }).catch(err => console.error(err));
+          } else {
+            try { html5QrCodeRef.current.clear(); } catch(e) {}
+          }
+        } catch (err) {
+          console.error('Error clearing camera', err);
         }
       }
       return;
@@ -156,8 +160,15 @@ export default function ScannerClient() {
 
     return () => {
       isMounted = false;
-      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-        html5QrCodeRef.current.stop().catch(console.error);
+      if (html5QrCodeRef.current) {
+        try {
+          const isScanning = html5QrCodeRef.current.isScanning || (typeof html5QrCodeRef.current.getState === 'function' && html5QrCodeRef.current.getState() === 2);
+          if (isScanning) {
+            html5QrCodeRef.current.stop().catch(console.error);
+          }
+        } catch(e) {
+          console.error('Error on unmount', e);
+        }
       }
     };
   }, [cameraMode]);
@@ -254,11 +265,9 @@ export default function ScannerClient() {
       <div className="relative z-10 w-full max-w-lg mx-auto mt-20 md:mt-16">
         
         {/* Camera Viewport */}
-        {cameraMode !== 'NONE' && (
-          <div className="mb-8 w-full max-w-sm mx-auto overflow-hidden rounded-3xl border-4 border-primary/20 bg-black shadow-2xl">
-            <div id="qr-reader" className="w-full"></div>
-          </div>
-        )}
+        <div className={`mb-8 w-full max-w-sm mx-auto overflow-hidden rounded-3xl border-4 border-primary/20 bg-black shadow-2xl ${cameraMode === 'NONE' ? 'hidden' : ''}`}>
+          <div id="qr-reader" className="w-full"></div>
+        </div>
 
         {/* Status Icon */}
         {(cameraMode === 'NONE' || status !== 'IDLE') && (
