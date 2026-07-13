@@ -135,6 +135,16 @@ export async function verifyAndDeleteProduct(id: string, adminPasswordInput: str
   }
 }
 
+// อ่านค่าจาก row โดยลองหลายชื่อคอลัมน์ (ไทย/อังกฤษ)
+function pick(row: any, keys: string[]): string | null {
+  for (const k of keys) {
+    if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
+      return String(row[k]).trim();
+    }
+  }
+  return null;
+}
+
 export async function importProductsExcel(formData: FormData) {
   try {
     const file = formData.get('file') as File;
@@ -144,21 +154,36 @@ export async function importProductsExcel(formData: FormData) {
     const workbook = xlsx.read(arrayBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet) as any[];
+
+    // หาแถวหัวตารางอัตโนมัติ — ข้ามแถวหัวเรื่อง/คำอธิบายด้านบน
+    const raw = xlsx.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+    const HEADER_HINTS = ['ยี่ห้อ', 'รุ่น', 'Brand', 'Name', 'Model'];
+    const headerRow = raw.findIndex(r =>
+      Array.isArray(r) && r.some(c => HEADER_HINTS.includes(String(c).trim()))
+    );
+    if (headerRow === -1) {
+      return { error: 'ไม่พบหัวตาราง (ต้องมีคอลัมน์ ยี่ห้อ/รุ่น หรือ Brand/Name)' };
+    }
+
+    const data = xlsx.utils.sheet_to_json(sheet, { range: headerRow }) as any[];
 
     let successCount = 0;
 
     for (const row of data) {
-      const brand = row['Brand'] ? String(row['Brand']) : null;
-      const viscosity = row['Viscosity'] ? String(row['Viscosity']) : null;
-      const size = row['Size'] ? String(row['Size']) : null;
-      const qty = parseInt(row['QtyPerCarton']) || 1;
+      const brand = pick(row, ['ยี่ห้อ', 'Brand']);
+      const viscosity = pick(row, ['เบอร์ความหนืด', 'Viscosity']);
+      const size = pick(row, ['ขนาด', 'Size']);
+      const qty = parseInt(pick(row, ['จำนวน/ลัง', 'QtyPerCarton']) || '1') || 1;
+      const costStr = pick(row, ['ทุน/ชิ้น (บาท)', 'Cost', 'CurrentAvgCost']);
+      const currentAvgCost = costStr ? parseFloat(costStr.replace(/[^0-9.]/g, '')) || 0 : 0;
 
-      // "รุ่น" = คอลัมน์ Name หรือ Model (เผื่อไฟล์เก่า) หรือประกอบจาก brand+viscosity+size
-      const nameParts = [brand, viscosity, size].filter(Boolean);
-      let name = row['Name'] ? String(row['Name']) : (row['Model'] ? String(row['Model']) : null);
+      // "รุ่น" เก็บในฟิลด์ name — มาจากคอลัมน์ รุ่น/Name/Model
+      let name = pick(row, ['รุ่น', 'Name', 'Model']);
       if (!name) {
-        name = nameParts.length > 0 ? nameParts.join(' ') + (qty > 1 ? ` (${qty}/ลัง)` : '') : 'Unnamed Product';
+        const nameParts = [brand, viscosity, size].filter(Boolean);
+        // ไม่มีรุ่นและไม่มีข้อมูลอื่นเลย → ข้ามแถวนี้ (กันแถวว่าง/แถวสรุป)
+        if (nameParts.length === 0) continue;
+        name = nameParts.join(' ') + (qty > 1 ? ` (${qty}/ลัง)` : '');
       }
 
       const product = await prisma.product.create({
@@ -168,8 +193,9 @@ export async function importProductsExcel(formData: FormData) {
           viscosity,
           size,
           qtyPerCarton: qty,
-          category: row['Category'] ? String(row['Category']) : null,
-          description: row['Description'] ? String(row['Description']) : null,
+          currentAvgCost,
+          category: pick(row, ['Category', 'หมวดหมู่']),
+          description: pick(row, ['Description', 'รายละเอียด']),
         }
       });
 

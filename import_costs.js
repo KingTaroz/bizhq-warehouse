@@ -20,9 +20,8 @@ async function main() {
   let importedCount = 0;
   for (const row of data) {
     const brand = row['ยี่ห้อ'] ? String(row['ยี่ห้อ']).trim() : null;
-    // Excel column 'รุ่น' is both the display name and the model
+    // Excel column 'รุ่น' stored in name field
     const name = row['รุ่น'] ? String(row['รุ่น']).trim() : null;
-    const model = name;
     const viscosity = row['เบอร์ความหนืด'] ? String(row['เบอร์ความหนืด']).trim() : null;
     const size = row['ขนาด'] ? String(row['ขนาด']).trim() : null;
     let qtyPerCarton = parseInt(row['จำนวน/ลัง']);
@@ -36,7 +35,6 @@ async function main() {
       data: {
         brand: brand || '',
         name,
-        model,
         viscosity,
         size,
         qtyPerCarton,

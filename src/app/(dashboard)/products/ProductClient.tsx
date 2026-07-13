@@ -56,17 +56,15 @@ export default function ProductClient({ initialProducts, options, role }: Produc
   };
 
   const downloadTemplate = () => {
+    // ฟอร์แมตเดียวกับไฟล์ราคาทุน (หัวคอลัมน์ไทย) — import อ่านได้ทั้งไทย/อังกฤษ
     const ws = xlsx.utils.json_to_sheet([
-      { 
-        Brand: 'PTT', 
-        Model: 'Performa Synthetic',
-        Viscosity: '5W-30',
-        Size: '1L',
-        QtyPerCarton: 4,
-        Category: 'Engine Oil', 
-        Description: 'Fully synthetic oil', 
-        BottleBarcode: '885000000001',
-        CartonBarcode: '885000000002'
+      {
+        'ยี่ห้อ': 'BCP',
+        'รุ่น': 'ซุปเปอร์ 4T',
+        'เบอร์ความหนืด': 'SAE40',
+        'ขนาด': '0.8L',
+        'จำนวน/ลัง': 12,
+        'ทุน/ชิ้น (บาท)': 67.5
       }
     ]);
     const wb = xlsx.utils.book_new();
