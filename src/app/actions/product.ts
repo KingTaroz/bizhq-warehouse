@@ -23,10 +23,11 @@ export async function getDistinctOptions() {
     distinct: ['brand'],
     select: { brand: true }
   });
+  // "รุ่น" ตอนนี้เก็บในฟิลด์ name — datalist autocomplete ดึงจาก name
   const models = await prisma.product.findMany({
-    where: { model: { not: '' } },
-    distinct: ['model'],
-    select: { model: true }
+    where: { name: { not: '' } },
+    distinct: ['name'],
+    select: { name: true }
   });
   const viscosities = await prisma.product.findMany({
     where: { viscosity: { not: '' } },
@@ -45,7 +46,7 @@ export async function getDistinctOptions() {
   });
   return {
     brands: brands.map(b => b.brand).filter(Boolean) as string[],
-    models: models.map(m => m.model).filter(Boolean) as string[],
+    models: models.map(m => m.name).filter(Boolean) as string[],
     viscosities: viscosities.map(v => v.viscosity).filter(Boolean) as string[],
     sizes: sizes.map(s => s.size).filter(Boolean) as string[],
     categories: categories.map(c => c.category).filter(Boolean) as string[]
@@ -55,24 +56,21 @@ export async function getDistinctOptions() {
 export async function createProduct(formData: FormData) {
   try {
     const brand = formData.get('brand') as string;
-    const model = formData.get('model') as string;
+    // ฟอร์มส่ง "รุ่น" มาเป็น name โดยตรง (เลิกใช้ field model แล้ว)
+    const name = (formData.get('name') as string) || 'Unnamed Product';
     const viscosity = formData.get('viscosity') as string;
     const size = formData.get('size') as string;
     const qtyPerCarton = parseInt(formData.get('qtyPerCarton') as string) || 1;
     const category = formData.get('category') as string;
     const description = formData.get('description') as string;
-    
+
     const bottleBarcode = formData.get('bottleBarcode') as string;
     const cartonBarcode = formData.get('cartonBarcode') as string;
-
-    const nameParts = [brand, model, viscosity, size].filter(Boolean);
-    const name = nameParts.length > 0 ? nameParts.join(' ') + (qtyPerCarton > 1 ? ` (${qtyPerCarton}/ลัง)` : '') : 'Unnamed Product';
 
     const product = await prisma.product.create({
       data: {
         name,
         brand,
-        model,
         viscosity,
         size,
         qtyPerCarton,
@@ -152,13 +150,13 @@ export async function importProductsExcel(formData: FormData) {
 
     for (const row of data) {
       const brand = row['Brand'] ? String(row['Brand']) : null;
-      const model = row['Model'] ? String(row['Model']) : null;
       const viscosity = row['Viscosity'] ? String(row['Viscosity']) : null;
       const size = row['Size'] ? String(row['Size']) : null;
       const qty = parseInt(row['QtyPerCarton']) || 1;
-      
-      const nameParts = [brand, model, viscosity, size].filter(Boolean);
-      let name = row['Name'] ? String(row['Name']) : null;
+
+      // "รุ่น" = คอลัมน์ Name หรือ Model (เผื่อไฟล์เก่า) หรือประกอบจาก brand+viscosity+size
+      const nameParts = [brand, viscosity, size].filter(Boolean);
+      let name = row['Name'] ? String(row['Name']) : (row['Model'] ? String(row['Model']) : null);
       if (!name) {
         name = nameParts.length > 0 ? nameParts.join(' ') + (qty > 1 ? ` (${qty}/ลัง)` : '') : 'Unnamed Product';
       }
@@ -167,7 +165,6 @@ export async function importProductsExcel(formData: FormData) {
         data: {
           name,
           brand,
-          model,
           viscosity,
           size,
           qtyPerCarton: qty,

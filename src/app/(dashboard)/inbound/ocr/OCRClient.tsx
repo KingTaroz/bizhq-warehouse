@@ -27,7 +27,6 @@ export default function OCRClient({ initialProducts, options }: { initialProduct
         p.name,
         p.category,
         p.brand,
-        p.model,
         p.viscosity,
         p.size,
         ...(p.barcodes?.map((b: any) => b.code) || [])
@@ -448,8 +447,8 @@ export default function OCRClient({ initialProducts, options }: { initialProduct
                       </datalist>
                     </div>
                     <div>
-                      <label className="block text-sm text-muted-foreground mb-1">รุ่น (Model)</label>
-                      <input type="text" name="model" list="models" required className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground" />
+                      <label className="block text-sm text-muted-foreground mb-1">รุ่น</label>
+                      <input type="text" name="name" list="models" required className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground" />
                       <datalist id="models">
                         {options.models.map((m: string) => <option key={m} value={m} />)}
                       </datalist>

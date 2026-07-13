@@ -170,7 +170,6 @@ export async function saveProductMappingAndCount(
     viscosity: string;
     size: string;
     qtyPerCarton: number;
-    currentAvgCost: number;
     packaging: string;
     receiveQty: number;
   }
@@ -187,23 +186,13 @@ export async function saveProductMappingAndCount(
   });
 
   let product;
-  
+
+  // ราคาทุนจัดการที่หน้า "จัดการราคาทุน" — สแกนเนอร์แค่นับ/รับเข้า ไม่แตะต้นทุน
   if (existingBarcode) {
-    // Known Product -> Update cost if changed
-    product = await prisma.product.update({
-      where: { id: existingBarcode.productId },
-      data: {
-        currentAvgCost: data.currentAvgCost
-      }
-    });
+    product = existingBarcode.product;
   } else if (data.productId) {
     // Bind to existing Product
-    product = await prisma.product.update({
-      where: { id: data.productId },
-      data: {
-        currentAvgCost: data.currentAvgCost
-      }
-    });
+    product = await prisma.product.findUniqueOrThrow({ where: { id: data.productId } });
     // Create new Barcode for this existing product
     await prisma.barcode.create({
       data: {
@@ -222,7 +211,6 @@ export async function saveProductMappingAndCount(
         viscosity: data.viscosity,
         size: data.size,
         qtyPerCarton: data.packaging === 'CARTON' ? data.qtyPerCarton : 1,
-        currentAvgCost: data.currentAvgCost,
         barcodes: {
           create: {
             code: barcode,
@@ -233,14 +221,6 @@ export async function saveProductMappingAndCount(
       }
     });
   }
-
-  // Log CostPriceHistory always on receive
-  await prisma.costPriceHistory.create({
-    data: {
-      productId: product.id,
-      costPrice: data.currentAvgCost
-    }
-  });
 
   const transaction = await prisma.transaction.create({
     data: {
@@ -259,7 +239,7 @@ export async function saveProductMappingAndCount(
       productId: product.id,
       locationId: location.id,
       quantity: qtyToAdd,
-      costPrice: data.currentAvgCost
+      costPrice: product.currentAvgCost
     }
   });
 
@@ -287,12 +267,11 @@ export async function saveProductMappingAndCount(
 
 export async function getProductsForMapping() {
   return await prisma.product.findMany({
-    orderBy: { name: 'asc' },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       brand: true,
       name: true,
-      model: true,
       viscosity: true,
       size: true,
       qtyPerCarton: true,

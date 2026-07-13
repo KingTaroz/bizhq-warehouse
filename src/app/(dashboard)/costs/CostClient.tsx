@@ -39,7 +39,6 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
     const searchableText = [
       p.name,
       p.brand,
-      p.model,
       p.viscosity,
       p.size
     ].filter(Boolean).join(' ').toLowerCase();
@@ -221,7 +220,7 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
                     />
                   </td>
                   <td className="px-6 py-4 text-muted-foreground font-medium">{p.brand || '-'}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{p.model || p.name || '-'}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{p.name || '-'}</td>
                   <td className="px-6 py-4 text-muted-foreground">{p.viscosity || '-'}</td>
                   <td className="px-6 py-4 text-muted-foreground">{p.size || '-'}</td>
                   <td className="px-6 py-4 text-center text-muted-foreground">{p.qtyPerCarton || 1}</td>

@@ -29,12 +29,10 @@ export default function InboundForm({
   const [formData, setFormData] = useState({
     brand: '',
     name: '',
-    model: '',
     viscosity: '',
     size: '',
     qtyPerCarton: 1,
-    currentAvgCost: 0,
-    packaging: 'BOTTLE', 
+    packaging: 'BOTTLE',
     receiveQty: 1
   });
 
@@ -55,11 +53,9 @@ export default function InboundForm({
         ...prev,
         brand: initialData.brand || '',
         name: initialData.name || '',
-        model: initialData.model || '',
         viscosity: initialData.viscosity || '',
         size: initialData.size || '',
-        qtyPerCarton: initialData.qtyPerCarton || 1,
-        currentAvgCost: initialData.currentAvgCost || 0
+        qtyPerCarton: initialData.qtyPerCarton || 1
       }));
     }
   }, [initialData]);
@@ -83,18 +79,16 @@ export default function InboundForm({
       ...prev,
       brand: p.brand || '',
       name: p.name || '',
-      model: p.model || '',
       viscosity: p.viscosity || '',
       size: p.size || '',
-      qtyPerCarton: p.qtyPerCarton || 1,
-      currentAvgCost: p.currentAvgCost || 0
+      qtyPerCarton: p.qtyPerCarton || 1
     }));
   };
 
   const handleClearSelection = () => {
     setSelectedProductId('');
     setFormData(prev => ({
-      ...prev, brand: '', name: '', model: '', viscosity: '', size: '', qtyPerCarton: 1
+      ...prev, brand: '', name: '', viscosity: '', size: '', qtyPerCarton: 1
     }));
   };
 
@@ -103,7 +97,7 @@ export default function InboundForm({
     setSelectedProductId('');
     if (enable) {
       setFormData(prev => ({
-        ...prev, brand: '', name: '', model: '', viscosity: '', size: '', qtyPerCarton: 1
+        ...prev, brand: '', name: '', viscosity: '', size: '', qtyPerCarton: 1
       }));
     }
   };
@@ -126,13 +120,12 @@ export default function InboundForm({
   const isInputDisabled = isBarcodeKnown || (selectedProductId !== '' && !isManualMode);
   const showProductForm = isBarcodeKnown || selectedProductId !== '' || isManualMode;
 
+  // ค้นหายืดหยุ่น: พิมพ์หลายคำคั่นเว้นวรรค เจอทุกคำในฟิลด์ใดก็ได้ (ไม่ต้องเรียงคำ)
   const filteredProducts = products.filter(p => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (p.name || '').toLowerCase().includes(q) || 
-           (p.brand || '').toLowerCase().includes(q) || 
-           (p.model || '').toLowerCase().includes(q) ||
-           (p.viscosity || '').toLowerCase().includes(q);
+    if (!searchQuery.trim()) return true;
+    const terms = searchQuery.toLowerCase().trim().split(/\s+/);
+    const text = [p.brand, p.name, p.viscosity, p.size].filter(Boolean).join(' ').toLowerCase();
+    return terms.every(t => text.includes(t));
   }).slice(0, 50); // limit to 50 results
 
   return (
@@ -175,7 +168,7 @@ export default function InboundForm({
                         onClick={() => handleProductSelect(p)}
                         className="px-4 py-3 hover:bg-muted cursor-pointer transition-colors border-b border-border/50 last:border-0"
                       >
-                        <div className="font-bold text-foreground">{p.brand} {p.name} {p.model ? `(${p.model})` : ''}</div>
+                        <div className="font-bold text-foreground">{p.brand} {p.name}</div>
                         <div className="text-xs text-muted-foreground mt-0.5">
                           {p.viscosity && `ความหนืด: ${p.viscosity} | `} 
                           {p.size && `ขนาด: ${p.size} | `} 
@@ -237,22 +230,12 @@ export default function InboundForm({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase">ชื่อสินค้า (Name)</label>
-              <input 
+              <label className="text-xs font-bold text-muted-foreground uppercase">รุ่น</label>
+              <input
                 required
-                type="text" 
+                type="text"
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
-                disabled={isInputDisabled}
-                className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-foreground focus:border-primary disabled:opacity-70"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase">รุ่น (Model)</label>
-              <input 
-                type="text" 
-                value={formData.model}
-                onChange={e => setFormData({...formData, model: e.target.value})}
                 disabled={isInputDisabled}
                 className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-foreground focus:border-primary disabled:opacity-70"
               />
@@ -303,20 +286,6 @@ export default function InboundForm({
                 inputMode="numeric"
                 value={formData.receiveQty}
                 onChange={e => setFormData({...formData, receiveQty: parseInt(e.target.value) || 1})}
-                className="w-full bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-2 text-foreground font-bold focus:border-orange-500 text-lg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase">ราคาทุน / ชิ้น (บาท)</label>
-              <input
-                required
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={formData.currentAvgCost}
-                onChange={e => setFormData({...formData, currentAvgCost: parseFloat(e.target.value) || 0})}
                 className="w-full bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-2 text-foreground font-bold focus:border-orange-500 text-lg"
               />
             </div>

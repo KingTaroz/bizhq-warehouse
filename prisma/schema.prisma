@@ -15,7 +15,6 @@ model Product {
   id          String   @id @default(cuid())
   name         String
   brand        String?
-  model        String?
   viscosity    String?
   size         String?
   qtyPerCarton Int      @default(1)

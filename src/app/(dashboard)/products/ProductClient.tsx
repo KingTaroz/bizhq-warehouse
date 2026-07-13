@@ -9,6 +9,7 @@ interface ProductClientProps {
   initialProducts: any[];
   options: {
     brands: string[];
+    models: string[];
     sizes: string[];
     categories: string[];
   };
@@ -33,7 +34,6 @@ export default function ProductClient({ initialProducts, options, role }: Produc
       p.name,
       p.category,
       p.brand,
-      p.model,
       p.viscosity,
       p.size,
       ...(p.barcodes?.map((b: any) => b.code) || [])
@@ -174,7 +174,6 @@ export default function ProductClient({ initialProducts, options, role }: Produc
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-foreground">{product.name}</div>
-                      {product.model && <div className="text-sm text-muted-foreground">รุ่น: {product.model}</div>}
                       {product.size && <div className="text-sm text-muted-foreground">ขนาด: {product.size} {product.qtyPerCarton > 1 ? `(${product.qtyPerCarton} ขวด/ลัง)` : ''}</div>}
                     </td>
                     <td className="px-6 py-4 text-orange-500 font-medium">
@@ -315,8 +314,11 @@ export default function ProductClient({ initialProducts, options, role }: Produc
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">รุ่น (Model) *</label>
-                  <input required name="model" type="text" placeholder="เช่น Performa Synthetic" className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500 transition-colors" />
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">รุ่น *</label>
+                  <input required name="name" list="model-list" type="text" placeholder="เช่น Performa Synthetic" className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500 transition-colors" />
+                  <datalist id="model-list">
+                    {options.models.map(m => <option key={m} value={m} />)}
+                  </datalist>
                 </div>
 
                 <div>
