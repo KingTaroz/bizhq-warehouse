@@ -21,6 +21,8 @@ export default function ProductClient({ initialProducts, options, role }: Produc
   const [manageBarcodesProductId, setManageBarcodesProductId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [brandFilter, setBrandFilter] = useState('')
+  const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HAS' | 'NONE'>('ALL')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(20)
 
@@ -28,18 +30,22 @@ export default function ProductClient({ initialProducts, options, role }: Produc
   const [editingStockValue, setEditingStockValue] = useState<string>('');
 
   const products = initialProducts.filter(p => {
-    if (!searchTerm.trim()) return true;
-    const searchTerms = searchTerm.toLowerCase().trim().split(/\s+/);
-    const searchableText = [
-      p.name,
-      p.category,
-      p.brand,
-      p.viscosity,
-      p.size,
-      ...(p.barcodes?.map((b: any) => b.code) || [])
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    return searchTerms.every(term => searchableText.includes(term));
+    // filter: ยี่ห้อ
+    if (brandFilter && p.brand !== brandFilter) return false;
+    // filter: สถานะบาร์โค้ด
+    const hasBarcode = (p.barcodes?.length || 0) > 0;
+    if (barcodeFilter === 'HAS' && !hasBarcode) return false;
+    if (barcodeFilter === 'NONE' && hasBarcode) return false;
+    // ค้นหา
+    if (searchTerm.trim()) {
+      const searchTerms = searchTerm.toLowerCase().trim().split(/\s+/);
+      const searchableText = [
+        p.name, p.category, p.brand, p.viscosity, p.size,
+        ...(p.barcodes?.map((b: any) => b.code) || [])
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!searchTerms.every(term => searchableText.includes(term))) return false;
+    }
+    return true;
   });
 
   const handleSaveStock = async (p: any) => {
@@ -111,17 +117,31 @@ export default function ProductClient({ initialProducts, options, role }: Produc
     <div className="space-y-6">
       {/* Action Bar */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-card p-4 rounded-2xl border border-border">
-        <div className="relative w-full sm:w-96">
-          <input 
-            type="text" 
-            placeholder="ค้นหา (บาร์โค้ด, ชื่อ, ยี่ห้อ, หมวดหมู่)..." 
-            className="w-full bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500 transition-colors"
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:flex-1">
+          <input
+            type="text"
+            placeholder="ค้นหา (บาร์โค้ด, ชื่อ, ยี่ห้อ, หมวดหมู่)..."
+            className="w-full sm:w-72 bg-background border border-border text-foreground rounded-xl px-4 py-2 focus:outline-none focus:border-orange-500 transition-colors"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           />
+          <select
+            value={brandFilter}
+            onChange={(e) => { setBrandFilter(e.target.value); setCurrentPage(1); }}
+            className="bg-background border border-border text-foreground rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
+          >
+            <option value="">ทุกยี่ห้อ</option>
+            {options.brands.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <select
+            value={barcodeFilter}
+            onChange={(e) => { setBarcodeFilter(e.target.value as 'ALL' | 'HAS' | 'NONE'); setCurrentPage(1); }}
+            className="bg-background border border-border text-foreground rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
+          >
+            <option value="ALL">บาร์โค้ด: ทั้งหมด</option>
+            <option value="HAS">มีบาร์โค้ดแล้ว</option>
+            <option value="NONE">ยังไม่ผูกบาร์โค้ด</option>
+          </select>
         </div>
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
           <button 

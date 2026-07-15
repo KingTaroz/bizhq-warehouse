@@ -12,10 +12,14 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
   const [isImporting, setIsImporting] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // รายชื่อยี่ห้อสำหรับ filter (ดึงจากข้อมูลเอง)
+  const brandOptions = Array.from(new Set(initialProducts.map(p => p.brand).filter(Boolean))).sort();
 
   const handleSaveCost = async (p: any) => {
     const newCartonCost = parseFloat(editValue);
@@ -33,8 +37,9 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
   };
 
   const filteredProducts = initialProducts.filter(p => {
+    if (brandFilter && p.brand !== brandFilter) return false;
     if (!searchQuery.trim()) return true;
-    
+
     const searchTerms = searchQuery.toLowerCase().trim().split(/\s+/);
     const searchableText = [
       p.name,
@@ -154,6 +159,14 @@ export default function CostClient({ initialProducts }: { initialProducts: any[]
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
             />
           </div>
+          <select
+            value={brandFilter}
+            onChange={(e) => { setBrandFilter(e.target.value); setCurrentPage(1); }}
+            className="w-full sm:w-auto px-3 py-2 bg-muted border border-border rounded-xl text-foreground focus:outline-none focus:border-orange-500"
+          >
+            <option value="">ทุกยี่ห้อ</option>
+            {brandOptions.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
         </div>
         
         <div className="flex flex-wrap gap-2">

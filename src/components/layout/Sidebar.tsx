@@ -25,6 +25,7 @@ export default function Sidebar({ role, onClose }: { role?: string, onClose?: ()
   const pathname = usePathname() || '';
   const [isInboundOpen, setIsInboundOpen] = useState(pathname.startsWith('/inbound'));
   const [isOutboundOpen, setIsOutboundOpen] = useState(pathname.startsWith('/outbound'));
+  const [isOnlineOpen, setIsOnlineOpen] = useState(pathname.startsWith('/platform-products'));
 
   return (
     <aside className="w-full h-full glass border-r border-border shadow-lg flex flex-col transition-colors duration-300">
@@ -72,9 +73,27 @@ export default function Sidebar({ role, onClose }: { role?: string, onClose?: ()
         <Link href="/products" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
           <PackageSearch className="w-5 h-5" /> สินค้า & สต๊อก
         </Link>
-        <Link href="/platform-products" onClick={onClose} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/platform-products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-          <Store className="w-5 h-5" /> สินค้าออนไลน์
-        </Link>
+        {/* Online Products Dropdown */}
+        <div>
+          <button
+            onClick={() => setIsOnlineOpen(!isOnlineOpen)}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium ${pathname.startsWith('/platform-products') ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+          >
+            <div className="flex items-center gap-3"><Store className="w-5 h-5" /> สินค้าออนไลน์</div>
+            <ChevronDown className={`w-4 h-4 transform transition-transform ${isOnlineOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOnlineOpen ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+            <div className="pl-4 pr-2 space-y-1 border-l-2 border-border ml-6 py-2">
+              <Link href="/platform-products/shopee" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/platform-products/shopee' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                🛒 Shopee
+              </Link>
+              <Link href="/platform-products/tiktok" onClick={onClose} className={`block px-4 py-2 rounded-xl transition-colors text-sm font-medium ${pathname === '/platform-products/tiktok' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                🎵 TikTok
+              </Link>
+            </div>
+          </div>
+        </div>
         
         {/* Inbound Dropdown */}
         <div>

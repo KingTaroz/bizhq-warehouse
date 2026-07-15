@@ -5,7 +5,7 @@ import { matchPlatformProduct, unmatchPlatformProduct, autoMatchPlatformProducts
 import { useRouter } from 'next/navigation'
 import { Pagination } from '@/components/Pagination'
 
-export default function PlatformProductClient({ items, products }: { items: any[], products: any[] }) {
+export default function PlatformProductClient({ items, products, platform }: { items: any[], products: any[], platform: string }) {
   const router = useRouter()
   const [tab, setTab] = useState<'UNMATCHED' | 'MATCHED' | 'ALL'>('UNMATCHED')
   const [search, setSearch] = useState('')
@@ -47,7 +47,7 @@ export default function PlatformProductClient({ items, products }: { items: any[
   const handleAutoMatch = async () => {
     if (!confirm('รันจับคู่อัตโนมัติ? ระบบจะจับเฉพาะรายการที่มั่นใจ')) return
     setBusy(true)
-    const res = await autoMatchPlatformProducts('SHOPEE')
+    const res = await autoMatchPlatformProducts(platform)
     setMessage(`จับคู่อัตโนมัติได้ ${res.matched} รายการ เหลือจับคู่เอง ${res.remaining} รายการ`)
     setBusy(false)
     router.refresh()
