@@ -46,6 +46,7 @@ model PlatformProduct {
   stock         Int      @default(0)
   productId     String?
   quantity      Int      @default(1) // จำนวนชิ้นจริงต่อ 1 หน่วยขาย (เช่น ยกลัง x12)
+  isSet         Boolean  @default(false) // จับคู่แบบเซต: ส่วนประกอบอยู่ใน Sku/SkuItem (productId = null)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

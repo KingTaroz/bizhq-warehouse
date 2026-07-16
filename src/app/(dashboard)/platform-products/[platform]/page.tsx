@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { buildSkuCode } from '@/lib/skucode'
 import PlatformProductClient from '../PlatformProductClient'
 
 const LABELS: Record<string, { title: string, emoji: string }> = {
@@ -13,7 +14,7 @@ export default async function PlatformPage({ params }: { params: Promise<{ platf
   const label = LABELS[platform]
   if (!label) notFound()
 
-  const items = await prisma.platformProduct.findMany({
+  const rawItems = await prisma.platformProduct.findMany({
     where: { platform },
     orderBy: [{ productId: { sort: 'asc', nulls: 'first' } }, { itemName: 'asc' }],
     include: { product: { select: { brand: true, name: true, viscosity: true, size: true } } }
@@ -22,6 +23,17 @@ export default async function PlatformPage({ params }: { params: Promise<{ platf
     orderBy: { name: 'asc' },
     select: { id: true, brand: true, name: true, viscosity: true, size: true, qtyPerCarton: true }
   })
+
+  // แนบส่วนประกอบเซต (เก็บใน Sku/SkuItem) ให้รายการที่จับคู่แบบเซต
+  const skus = await prisma.sku.findMany({
+    where: { platform },
+    include: { items: { include: { product: { select: { brand: true, name: true, viscosity: true, size: true } } } } }
+  })
+  const skuMap = new Map(skus.map(s => [s.skuCode, s.items]))
+  const items = rawItems.map(pp => ({
+    ...pp,
+    setItems: pp.isSet ? (skuMap.get(buildSkuCode(pp.itemName, pp.variationName)) || []) : null
+  }))
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
