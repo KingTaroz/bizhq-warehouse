@@ -71,11 +71,29 @@ export async function autoMatchPlatformProducts(platform: string) {
 
   let matched = 0
   for (const pp of pps) {
-    const variation = pp.variationName || ''
-    // เซตหลายชิ้น (เช่น น้ำมัน+ไส้กรอง) → จับคู่เอง ยกเว้นตัวเลือก "ไม่รับไส้กรอง"
-    if (variation.includes(',') && !variation.includes('ไม่รับไส้กรอง')) continue
+    // ของแถม/ของสมนาคุณ ไม่ใช่สินค้าขาย → ข้าม
+    if (/ของสมนาคุณ|ของแถม/.test(pp.itemName)) continue
 
-    const text = norm(pp.itemName + ' ' + variation)
+    // TikTok: 'Default' / '-, -' = ไม่มีตัวเลือกจริง, ตัด prefix "Flash Sale |"
+    let variation = pp.variationName || ''
+    if (variation === 'Default' || variation === '-, -') variation = ''
+    variation = variation.replace(/Flash Sale\s*\|?/ig, '').trim()
+
+    // ตัวเลือกหลายมิติคั่นด้วย comma — พิจารณาทีละท่อน:
+    // ท่อน "ไม่รับ..." = ปฏิเสธของพ่วง ตัดทิ้งได้ (ห้ามใช้ยกเว้นทั้งประโยค — เคสชุด Vespa)
+    const segments = variation.split(',').map(s => s.trim()).filter(s => s && s !== '-')
+    const kept = segments.filter(s => !s.includes('ไม่รับ'))
+    // ท่อนที่เป็นของพ่วง (ไทย/อังกฤษ) → เซต ให้จัดเซตเอง
+    if (kept.some(s => /แถม|เฟืองท้าย|ไส้กรอง|gear\s*oil|หลอด/i.test(s))) continue
+    if (kept.length > 1) {
+      // หลายท่อนจะยอมเป็นสินค้าเดี่ยวได้ ต่อเมื่อทุกท่อนเป็นแค่คุณลักษณะ (ความหนืด/ขนาด)
+      const attrLike = (s: string) => /^(sae\s*)?\d+w(-\d+)?$/i.test(s.trim()) || /^\d+(\.\d+)?\s*(ml|l|ลิตร)/i.test(s.trim())
+      if (!kept.every(attrLike)) continue
+    }
+    variation = kept.join(' ')
+
+    const nv = norm(variation)
+    const text = norm(pp.itemName) + ' ' + nv
 
     // ตรวจจำนวนต่อหน่วยขาย — เลขในชื่อตัวเลือกสำคัญกว่าชื่อสินค้า
     // เช่น สินค้า "(ยกลังx6)" แต่ตัวเลือก "12กระป๋อง(ครึ่งลัง)" ต้องได้ 12
@@ -90,10 +108,38 @@ export async function autoMatchPlatformProducts(platform: string) {
       continue // มีคำว่าลังแต่ไม่รู้จำนวน → จับคู่เอง
     }
 
+    // ขนาด/ความหนืดยึดจากตัวเลือกเป็นหลัก — ชื่อสินค้ามักใส่หลายค่า ("0.5ลิตร/1ลิตร", "10W/15W")
+    const sizeInVari = nv.match(/(\d+(?:\.\d+)?)(?:\+\d+)?\s*(?:l|ml)\b/)
+    const viscInVari = nv.match(/\d+w(-\d+)?|sae\d+/)
+    // เทียบค่าตัวเลขต้องมีขอบเขต: "15w-40" ห้าม match "5w-40", "6+1l" ห้าม match "1l"
+    const hasTok = (hay: string, tok: string) => {
+      let i = hay.indexOf(tok)
+      while (i !== -1) {
+        const prev = hay[i - 1]
+        if (!(prev >= '0' && prev <= '9') && prev !== '.' && prev !== '+') return true
+        i = hay.indexOf(tok, i + 1)
+      }
+      return false
+    }
+
     const candidates = products.filter(p => {
       if (!p.brand || !p.name) return false
-      const fields = [p.brand, p.name, p.viscosity, p.size].filter(Boolean).map(f => norm(f as string))
-      return fields.every(f => text.includes(f))
+      const base = [p.brand, p.name].filter(Boolean).map(f => norm(f as string))
+      if (!base.every(f => text.includes(f))) return false
+      // ความหนืด: ใช้ field ก่อน ถ้าว่างสกัดจากชื่อสินค้า (เช่น "Fork Oil 10W Medium")
+      const nvi = p.viscosity
+        ? norm(p.viscosity)
+        : (norm(p.name).match(/\d+w(-\d+)?|sae\d+/)?.[0] ?? null)
+      if (nvi) {
+        if (viscInVari ? !hasTok(nv, nvi) : !hasTok(text, nvi)) return false
+      }
+      if (p.size) {
+        const ns = norm(p.size)
+        // ตัวเลือกระบุขนาด → ขนาดสินค้าต้องอยู่ในตัวเลือกเท่านั้น
+        if (sizeInVari) return hasTok(nv, ns)
+        return hasTok(text, ns)
+      }
+      return true
     })
 
     if (candidates.length === 1) {

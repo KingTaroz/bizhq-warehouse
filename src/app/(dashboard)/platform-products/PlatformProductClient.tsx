@@ -122,7 +122,7 @@ export default function PlatformProductClient({ items, products, platform }: { i
         <div className="flex gap-2 w-full lg:w-auto">
           <input
             type="text"
-            placeholder="ค้นหาชื่อสินค้า Shopee..."
+            placeholder={`ค้นหาชื่อสินค้า ${platform === 'TIKTOK' ? 'TikTok' : 'Shopee'}...`}
             value={search}
             onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
             className="flex-1 lg:w-72 px-4 py-2 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
@@ -151,7 +151,7 @@ export default function PlatformProductClient({ items, products, platform }: { i
                 <div className="text-sm text-muted-foreground mt-0.5">
                   {pp.variationName && <span className="mr-3">ตัวเลือก: {pp.variationName}</span>}
                   <span className="mr-3">ราคา {pp.price.toLocaleString('th-TH')} ฿</span>
-                  <span>สต๊อก Shopee: {pp.stock}</span>
+                  <span>สต๊อก {platform === 'TIKTOK' ? 'TikTok' : 'Shopee'}: {pp.stock}</span>
                 </div>
                 {pp.product && (
                   <div className="text-sm mt-1 text-emerald-500 font-medium">
